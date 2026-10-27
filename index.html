@@ -169,6 +169,7 @@ V.profile=(setup)=>`${setup?"":`<button class="btn sm" data-go="more">← 더보
 V.adm=()=>{
   const hold=sessions.filter(s=>s.status=="hold").length,live=sessions.filter(s=>s.status=="active").length;
   return`<button class="btn sm" data-go="more">← 더보기</button><h1 style="margin-top:12px">관리자</h1>
+  <div id="chk" class="box">관리자 권한 확인 중...</div>
   <div class="stat"><div><span class="sub">회원</span><b>${Object.keys(users).length}명</b></div><div><span class="sub">보류 세션</span><b>${hold}건</b></div><div><span class="sub">공부 중</span><b>${live}명</b></div></div>
   <div class="card" style="padding:4px 16px;margin-top:14px"><button class="item" data-go="adm-members">회원 관리 <span>›</span></button><button class="item" data-go="adm-sessions">세션 관리 <span>›</span></button><button class="item" data-go="adm-settings">설정 (목표 시간·입장 코드) <span>›</span></button><button class="item" data-go="adm-audit">수정 이력 <span>›</span></button></div>`;
 };
@@ -241,12 +242,18 @@ function bind(){
   $("#af")&&($("#af").onchange=e=>{afilter=e.target.value;render()});
   if(v=="cert")bindCert();
   if(!users[me.uid]?.nick||v=="profile")bindProfile(!users[me.uid]?.nick);
+  if(v=="adm")checkAdmin();
   if(v=="adm-member")bindMember();
   if(v=="adm-session")bindSession();
   if(v=="adm-settings")bindSettings();
 }
 async function sha(f){const h=await crypto.subtle.digest("SHA-256",await f.arrayBuffer());return[...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,"0")).join("")}
 async function shrink(f){const bm=await createImageBitmap(f),k=Math.min(1,800/Math.max(bm.width,bm.height)),c=document.createElement("canvas");c.width=Math.round(bm.width*k);c.height=Math.round(bm.height*k);c.getContext("2d").drawImage(bm,0,0,c.width,c.height);let q=.6,u;do{u=c.toDataURL("image/jpeg",q);q-=.1}while(u.length>450000&&q>.25);return u}
+async function checkAdmin(){
+  const b=$("#chk");if(!b)return;
+  try{await setDoc(doc(db,"settings","_check"),{at:serverTimestamp()});b.textContent="관리자 권한 확인됨: 저장과 삭제가 가능합니다."}
+  catch(x){b.className="box err";b.innerHTML=`관리자 권한이 없어 저장·삭제가 막혀 있습니다 (${esc(x.code||x.message)}).<br>Firestore 규칙의 관리자 이메일이 <b>${esc(me.email)}</b> 와 똑같은지 확인하고 <b>게시</b>를 눌러 주세요.`}
+}
 function bindCert(){
   $("#go").onclick=async()=>{
     const a=myActive(),mode=a?"end":"start",btn=$("#go");
