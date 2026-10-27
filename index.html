@@ -198,7 +198,7 @@ function bindAdmin(){
     await audit(s.id,{start:fmtKst(t(s.startAt)),end:fmtKst(t(s.endAt)),status:s.status},{start:a,end:e,status:upd.status});
     await updateDoc(doc(db,"sessions",s.id),upd);
   });
-  document.querySelectorAll("[data-del]").forEach(b=>b.onclick=async()=>{if(!confirm("이 세션을 삭제할까요?"))return;await audit(b.dataset.del,"삭제됨","");await deleteDoc(doc(db,"sessions",b.dataset.del));for(const k of["start","end"])deleteDoc(doc(db,"photos",b.dataset.del+"_"+k)).catch(()=>{})});
+  document.querySelectorAll("[data-del]").forEach(b=>b.onclick=async()=>{if(!confirm("이 세션을 삭제할까요?"))return;try{await deleteDoc(doc(db,"sessions",b.dataset.del));await audit(b.dataset.del,"삭제됨","")}catch(x){console.error(x);alert("삭제하지 못했어요. 오류: "+(x.code||x.message)+"\n(permission-denied면 Firestore 규칙의 관리자 이메일을 확인해 주세요.)");return}for(const k of["start","end"])deleteDoc(doc(db,"photos",b.dataset.del+"_"+k)).catch(()=>{})});
 }
 
 /* ---------- 인증 ---------- */
