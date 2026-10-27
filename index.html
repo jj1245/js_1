@@ -93,12 +93,17 @@ const myActive=()=>sessions.find(s=>s.uid==me?.uid&&s.status=="active");
 const go=(x,a=null)=>{v=x;arg=a;dirty=false;window.scrollTo(0,0);render()};
 const refresh=()=>{if(FORM.includes(v)&&dirty)return;render()};
 
+const nextWeek=k=>new Date(Date.parse(k+"T00:00:00Z")+7*DAY).toISOString().slice(0,10);
+function firstWeek(uid){
+  const j=users[uid]?.joinWeek;if(j)return nextWeek(j);
+  const w=sessions.filter(s=>s.uid==uid&&s.weekKey).map(s=>s.weekKey).sort()[0];return w||"9999";
+}
 function stats(key){
   const T=settings.target,by={};
-  for(const[uid,u]of Object.entries(users))by[uid]={uid,name:u.nick||"?",min:0,hold:0};
+  for(const[uid,u]of Object.entries(users)){if(u.isAdmin||!u.nick)continue;by[uid]={uid,name:u.nick,min:0,hold:0}}
   for(const s of sessions)if(s.weekKey==key&&by[s.uid]){const m=mins(s);if(s.status=="ok")by[s.uid].min+=m;else if(s.status=="hold")by[s.uid].hold+=m}
   const rows=Object.values(by);
-  for(const r of rows){const h=r.min/60;r.pen=h>=T?0:h>=10?1:h>=8?2:h>=6?3:5;r.bonus=h>T?Math.round((h-T)*10)/100:0;r.score=Math.round((r.bonus-r.pen)*100)/100}
+  for(const r of rows){const h=r.min/60;r.elig=key>=firstWeek(r.uid);r.pen=(!r.elig||h>=T)?0:h>=10?1:h>=8?2:h>=6?3:5;r.bonus=h>T?Math.round((h-T)*10)/100:0;r.score=Math.round((r.bonus-r.pen)*100)/100}
   return rows.sort((a,b)=>b.score-a.score||b.min-a.min);
 }
 async function audit(target,before,after,reason=""){await addDoc(collection(db,"audit"),{by:me.email,target,before,after,reason,at:serverTimestamp()})}
@@ -106,6 +111,8 @@ async function audit(target,before,after,reason=""){await addDoc(collection(db,"
 /* ---------- 화면들 ---------- */
 const V={};
 V.home=()=>{
+  if(isAdmin()){const live=sessions.filter(s=>s.status=="active");return`<h1>현황</h1><div class="box">관리자 계정은 공부 시간·벌점·랭킹에 포함되지 않습니다.</div>
+  <div class="card"><h2>지금 공부 중</h2>${live.length?`<table><tr><th>닉네임</th><th>장소</th><th class="n">경과</th></tr>${live.map(s=>`<tr><td>${esc(nm(s.uid))}</td><td>${esc(s.place)}</td><td class="n" data-t="${t(s.startAt)||Date.now()}">${clk(Date.now()-(t(s.startAt)||Date.now()))}</td></tr>`).join("")}</table>`:`<p class="sub" style="margin:0">지금 공부 중인 멤버가 없습니다.</p>`}</div>`}
   const cur=wk(Date.now()),mine=stats(cur).find(r=>r.uid==me.uid)||{min:0,hold:0},T=settings.target,h=mine.min/60,a=myActive();
   const live=sessions.filter(s=>s.status=="active");
   return`<h1>이번 주 현황</h1><p class="sub">월요일~일요일 기준</p>
@@ -138,10 +145,10 @@ V.rec=()=>{
 V.rank=()=>{
   const cur=wk(Date.now()),last=wk(Date.now()-7*DAY),fin=tab!="cur",rows=stats(fin?last:cur);
   if(!fin)rows.sort((x,y)=>y.min-x.min);
-  const king=fin&&rows[0]&&rows[0].min>0?rows[0].uid:null;
+  const king=fin&&rows[0]&&rows[0].min>0?rows[0].uid:null,any=rows.some(r=>r.min>0||r.elig);
   return`<h1>주간 랭킹</h1><div class="tabs"><button class="${fin?"":"on"}" data-tab="cur">이번 주</button><button class="${fin?"on":""}" data-tab="last">지난 주</button></div>
-  <div class="card"><table><tr><th>닉네임</th><th class="n">시간</th>${fin?`<th class="n">벌점</th><th class="n">상점</th><th class="n">총점</th>`:""}</tr>
-  ${rows.map(r=>`<tr><td>${r.uid==king?`<span class="badge b-hold">공부왕</span> `:""}${esc(r.name)}</td><td class="n">${(r.min/60).toFixed(1)}h</td>${fin?`<td class="n" style="color:var(--bad)">${r.pen?"-"+r.pen:"0"}</td><td class="n" style="color:var(--ok)">${r.bonus?"+"+r.bonus:"0"}</td><td class="n"><b>${r.score}</b></td>`:""}</tr>`).join("")}</table></div>
+  ${fin&&!any?`<div class="box">아직 정산된 주가 없습니다. 첫 정산은 가입한 다음 주 월요일 0시에 나옵니다.</div>`:`<div class="card"><table><tr><th>닉네임</th><th class="n">시간</th>${fin?`<th class="n">벌점</th><th class="n">상점</th><th class="n">총점</th>`:""}</tr>
+  ${rows.map(r=>`<tr><td>${r.uid==king?`<span class="badge b-hold">공부왕</span> `:""}${esc(r.name)}</td><td class="n">${(r.min/60).toFixed(1)}h</td>${fin?`<td class="n" style="color:var(--bad)">${r.elig?(r.pen?"-"+r.pen:"0"):"-"}</td><td class="n" style="color:var(--ok)">${r.bonus?"+"+r.bonus:"0"}</td><td class="n"><b>${r.score}</b></td>`:""}</tr>`).join("")}</table></div>`}
   <div class="box">${fin?"총점 = 상점 − 벌점이며 1위가 이주의 공부왕입니다.":"이번 주 벌점·상점·공부왕은 일요일 밤 12시에 정해집니다."}</div>`;
 };
 V.stat=()=>{
@@ -154,7 +161,7 @@ V.stat=()=>{
   <div class="card" style="margin-top:14px"><h2>이번 주 요일별 (인정 시간)</h2><div class="dayb">${days.map((d,i)=>`<div><i style="height:${vals[i]/mx*100}%"></i>${"월화수목금토일"[i]}</div>`).join("")}</div></div>`;
 };
 V.more=()=>`<h1>더보기</h1><div class="card" style="padding:4px 16px">
-  <button class="item" data-go="stat">통계 <span>›</span></button>
+  ${isAdmin()?"":`<button class="item" data-go="stat">통계 <span>›</span></button>`}
   <button class="item" data-go="profile">프로필 수정 <span>›</span></button>
   <div class="item" style="color:var(--sub)">벌점·벌칙 현황 <span>준비 중</span></div>
   ${isAdmin()?`<button class="item" data-go="adm"><b>관리자</b> <span>›</span></button>`:""}
@@ -218,7 +225,7 @@ function render(){
   if(!usersReady){app.innerHTML=`<main><p class="sub" style="text-align:center;margin-top:20vh">불러오는 중...</p></main>`;return}
   if(!users[me.uid]?.nick){app.innerHTML=`<header class="hd"><b>스터디 공부 인증</b></header><main>${V.profile(true)}</main>`;bind();return}
   const on=["home","cert","rec","rank"].includes(v)?v:"more";
-  const nav=[["home","홈"],["cert","인증"],["rec","기록"],["rank","랭킹"],["more","더보기"]];
+  const nav=[["home","홈"],["cert","인증"],["rec","기록"],["rank","랭킹"],["more","더보기"]].filter(([k])=>!isAdmin()||!["cert","rec"].includes(k));
   app.innerHTML=`<header class="hd"><b>스터디 공부 인증</b><span>${esc(nick())}${isAdmin()?" · 관리자":""}</span></header>
   <nav>${nav.map(([k,l])=>`<button class="${on==k?"on":""}" data-go="${k}">${l}</button>`).join("")}</nav><main>${V[v]()}</main>`;
   bind();
@@ -280,7 +287,7 @@ function bindProfile(setup){
     const r=$("#pr").value.trim(),n=$("#pn").value.trim();
     if(!r||!n)return err("이름과 닉네임을 모두 입력해 주세요.");
     if(setup&&$("#pi").value.trim()!==(settings.entryCode||DEFAULT_CODE))return err("입장 코드가 맞지 않습니다. 방장에게 확인해 주세요.");
-    try{await setDoc(doc(db,"profiles",me.uid),{realName:r,email:me.email},{merge:true});await setDoc(doc(db,"users",me.uid),{nick:n});myReal=r;if(!setup)go("more")}
+    try{await setDoc(doc(db,"profiles",me.uid),{realName:r,email:me.email},{merge:true});await setDoc(doc(db,"users",me.uid),setup?{nick:n,joinWeek:wk(Date.now())}:{nick:n},{merge:true});myReal=r;if(!setup)go("more")}
     catch(x){console.error(x);err("저장하지 못했습니다. 잠시 뒤 다시 시도해 주세요.")}
   };
 }
@@ -329,6 +336,7 @@ onAuthStateChanged(auth,u=>{
   unsubs.forEach(f=>f());unsubs=[];me=u;v="home";
   if(!u){users={};real={};sessions=[];usersReady=false;render();return}
   setDoc(doc(db,"profiles",u.uid),{email:u.email},{merge:true}).catch(()=>{});
+  if(isAdmin())setDoc(doc(db,"users",u.uid),{isAdmin:true},{merge:true}).catch(()=>{});
   getDocs(query(collection(db,"photos"),where("at","<",Timestamp.fromMillis(Date.now()-7*DAY)))).then(q=>q.forEach(d=>deleteDoc(d.ref))).catch(()=>{});
   const keys=Array.from({length:6},(_,i)=>wk(Date.now()-i*7*DAY));
   unsubs.push(onSnapshot(collection(db,"users"),q=>{users={};q.forEach(d=>users[d.id]=d.data());usersReady=true;refresh()}));
