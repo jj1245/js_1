@@ -6,45 +6,47 @@
 <title>스터디 공부 인증</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <style>
-:root{--bg:#eef2f5;--card:#fff;--ink:#16243a;--sub:#5d6b7e;--line:#d6dde5;--acc:#2456e6;--acc-t:#fff;--ok:#12805a;--bad:#c93a45;--hold:#b7791f;color-scheme:light}
-@media(prefers-color-scheme:dark){:root{--bg:#0f1722;--card:#17212f;--ink:#e7edf5;--sub:#9aa9bc;--line:#283447;--acc:#6d93ff;--acc-t:#0b1220;--ok:#43c79a;--bad:#ff7b84;--hold:#e5b45c;color-scheme:dark}}
+:root{--bg:#f4f6f9;--card:#fff;--ink:#1e2124;--sub:#5b6570;--line:#d5dae0;--navy:#0f2a5c;--pri:#0b50d0;--pri-bg:#eaf1fd;--ok:#1b7f4d;--warn:#b25e09;--bad:#c62828;color-scheme:light}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 Pretendard,system-ui,sans-serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
-main{max-width:620px;margin:0 auto;padding:16px}
-h1,h2,h3{margin:0;line-height:1.25}h2{font-size:16px;margin-bottom:10px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
-.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 Pretendard,system-ui,sans-serif}
+h1{font-size:24px;margin:0 0 4px}h2{font-size:18px;margin:0 0 10px}h3{font-size:16px;margin:0 0 6px}
+.hd{background:var(--navy);color:#fff;padding:12px 16px;padding-top:calc(12px + env(safe-area-inset-top));display:flex;justify-content:space-between;align-items:center}
+.hd b{font-size:17px}.hd span{font-size:14px;opacity:.9}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:5}
+nav button{flex:1;border:0;background:none;padding:10px 2px;min-height:56px;font-size:13px;color:var(--sub);border-top:3px solid transparent;border-radius:0}
+nav button.on{color:var(--pri);font-weight:700;border-top-color:var(--pri)}
+main{max-width:720px;margin:0 auto;padding:16px 16px 96px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:16px;margin-bottom:14px}
+.box{background:var(--pri-bg);border-left:4px solid var(--pri);padding:10px 12px;margin-bottom:14px;font-size:14px;border-radius:0 4px 4px 0}
+.box.warn{background:#fff4e5;border-color:var(--warn)}.box.err{background:#fdecec;border-color:var(--bad)}
 button,input,select{font:inherit;color:inherit}
-button{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:9px 14px;cursor:pointer;min-height:40px}
-button.pri{background:var(--acc);color:var(--acc-t);border-color:var(--acc);font-weight:700}
-button.sm{padding:3px 9px;min-height:30px;font-size:13px}
-button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
-input,select{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--bg);margin:4px 0 12px}
-label{display:block;font-size:13px;color:var(--sub)}
-.clock{font-size:46px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1.1}
-.sub{color:var(--sub);font-size:13px}
-.bar{height:10px;background:var(--bg);border-radius:6px;overflow:hidden;margin:10px 0 6px;border:1px solid var(--line)}
-.bar i{display:block;height:100%;background:var(--acc)}
+.btn{border:1px solid var(--pri);background:#fff;color:var(--pri);border-radius:4px;padding:8px 14px;min-height:44px;cursor:pointer;font-weight:600}
+.btn.p{background:var(--pri);color:#fff}.btn.d{border-color:var(--bad);color:var(--bad)}.btn.sm{min-height:34px;padding:3px 10px;font-size:14px}.btn.w{width:100%}
+.btn:disabled{opacity:.5}
+:focus-visible{outline:3px solid #7aa7ff;outline-offset:2px}
+input,select{width:100%;border:1px solid #9aa4b0;border-radius:4px;padding:10px;min-height:44px;background:#fff;margin:4px 0 14px}
+label{display:block;font-size:14px;font-weight:600}
+.sub{color:var(--sub);font-size:14px}
+.big{font-size:44px;font-weight:700;line-height:1.15;font-variant-numeric:tabular-nums;color:var(--navy)}
+.bar{height:14px;background:#e3e8ef;border-radius:7px;overflow:hidden;margin:10px 0 6px}.bar i{display:block;height:100%;background:var(--pri)}
 .row{display:flex;gap:8px;align-items:center}.row>*{flex:1}.between{justify-content:space-between}.between>*{flex:none}
-.tabs{display:flex;gap:6px;margin-bottom:10px}.tabs button{flex:none}.tabs .on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-table{width:100%;border-collapse:collapse;font-size:14px}td,th{padding:7px 4px;border-bottom:1px solid var(--line);text-align:left}th{color:var(--sub);font-weight:500;font-size:12px}
-td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
-.crown{color:var(--hold);font-weight:700}.bad{color:var(--bad)}.ok{color:var(--ok)}.hold{color:var(--hold)}.void{color:var(--sub)}
-.live{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)}.live:last-child{border:0}
-.ses{padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}.ses:last-child{border:0}
-#modal:not(:empty){position:fixed;inset:0;background:#000a;display:flex;align-items:flex-end;justify-content:center;z-index:9}
-.sheet{background:var(--card);width:100%;max-width:620px;border-radius:18px 18px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom))}
-#err{color:var(--bad);min-height:22px;margin:0 0 8px;font-size:14px}
-#login{max-width:380px;margin:12vh auto 0}
-@media(prefers-reduced-motion:no-preference){.bar i{transition:width .4s}}
+table{width:100%;border-collapse:collapse;font-size:15px}th,td{padding:9px 6px;border-bottom:1px solid var(--line);text-align:left}th{background:#eef1f5;font-size:13px;color:var(--sub)}.n{text-align:right;font-variant-numeric:tabular-nums}
+.badge{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px;font-weight:700;border:1px solid}
+.b-ok{color:var(--ok)}.b-hold{color:var(--warn)}.b-void{color:var(--sub)}.b-active{color:var(--pri)}
+.item{display:flex;justify-content:space-between;align-items:center;padding:12px 4px;border-bottom:1px solid var(--line);width:100%;background:none;border-left:0;border-right:0;border-top:0;text-align:left;cursor:pointer;min-height:48px;border-radius:0}
+.tabs{display:flex;margin-bottom:12px;border-bottom:2px solid var(--line)}.tabs button{flex:1;border:0;background:none;padding:10px;min-height:44px;font-weight:600;color:var(--sub);border-bottom:3px solid transparent;margin-bottom:-2px}.tabs .on{color:var(--pri);border-bottom-color:var(--pri)}
+.stat{display:flex;gap:8px}.stat>div{flex:1;background:var(--pri-bg);border-radius:4px;padding:10px;text-align:center}.stat b{display:block;font-size:20px;color:var(--navy)}
+.dayb{display:flex;align-items:flex-end;gap:6px;height:120px;margin-top:8px}.dayb div{flex:1;text-align:center;font-size:12px;color:var(--sub);display:flex;flex-direction:column;justify-content:flex-end;height:100%}.dayb i{display:block;background:var(--pri);border-radius:3px 3px 0 0;min-height:2px}
+#modal:not(:empty){position:fixed;inset:0;background:#000b;display:flex;align-items:center;justify-content:center;z-index:9;padding:16px}.sheet{background:#fff;border-radius:6px;padding:16px;max-width:560px;width:100%;max-height:90vh;overflow:auto}
+#err{color:var(--bad);min-height:24px;margin:0 0 8px;font-size:14px}
+@media(min-width:768px){nav{position:static;max-width:720px;margin:0 auto;border:1px solid var(--line);border-top:0}main{padding-bottom:40px}}
 </style>
 </head>
 <body>
-<main id="app"></main>
+<div id="app"></div>
 <div id="modal"></div>
-
 <script type="module">
-/* ====== 설정: 여기만 바꾸세요 ====== */
+/* ====== 설정 ====== */
 const firebaseConfig = {
   apiKey: "AIzaSyAqkPKXmLLVnC1ge2KiID-EP5I7g6BJFQM",
   authDomain: "js-10-27.firebaseapp.com",
@@ -54,12 +56,12 @@ const firebaseConfig = {
   appId: "1:954452462943:web:25e4c05577b24901d9faea",
   measurementId: "G-7PKK4Q2GB0"
 };
-const ADMINS = ["4155yujin@gmail.com"];   // 관리자 이메일 (firestore.rules에도 동일하게)
-const INVITE = "study2026";           // 회원가입 초대 코드
-const TOL = 10;                       // 사진 시각 허용 오차(분)
-/* ================================== */
+const ADMINS = ["4155yujin@gmail.com"];
+const DEFAULT_CODE = "study2026";   // 관리자가 설정 화면에서 바꾸기 전까지 쓰는 입장 코드
+const TOL = 10;
+/* ================= */
 
-const V="10.14.1",G=`https://www.gstatic.com/firebasejs/${V}/`;
+const G="https://www.gstatic.com/firebasejs/10.14.1/";
 const {initializeApp}=await import(G+"firebase-app.js");
 const {getAuth,onAuthStateChanged,GoogleAuthProvider,signInWithPopup,signOut}=await import(G+"firebase-auth.js");
 const {getFirestore,collection,doc,addDoc,setDoc,getDoc,getDocs,updateDoc,deleteDoc,onSnapshot,query,where,serverTimestamp,Timestamp}=await import(G+"firebase-firestore.js");
@@ -71,189 +73,268 @@ const KST=9*36e5,DAY=864e5,PLACES=["도서관","스터디카페(스카)","카페
 const wk=ms=>{const k=new Date(ms+KST);k.setUTCDate(k.getUTCDate()-(k.getUTCDay()+6)%7);return k.toISOString().slice(0,10)};
 const hm=ms=>new Date(ms+KST).toISOString().slice(11,16);
 const md=ms=>new Date(ms+KST).toISOString().slice(5,10).replace("-","/");
+const dkey=ms=>new Date(ms+KST).toISOString().slice(0,10);
 const dur=m=>`${Math.floor(m/60)}시간 ${String(Math.round(m%60)).padStart(2,"0")}분`;
-const clk=ms=>{const s=Math.max(0,Math.floor(ms/1e3));return [s/3600|0,s%3600/60|0,s%60].map(n=>String(n).padStart(2,"0")).join(":")};
+const clk=ms=>{const s=Math.max(0,Math.floor(ms/1e3));return[s/3600|0,s%3600/60|0,s%60].map(n=>String(n).padStart(2,"0")).join(":")};
 const t=x=>x?.toMillis?x.toMillis():null;
-const STAT={ok:["인정","ok"],hold:["보류","hold"],void:["무효","void"],active:["진행 중","ok"]};
+const inp=ms=>ms?new Date(ms+KST).toISOString().slice(0,16):"";
+const parse=v=>v?new Date(v+":00+09:00").getTime():null;
+const ST={ok:"인정",hold:"보류",void:"무효",active:"진행 중"};
+const badge=s=>`<span class="badge b-${s}">${ST[s]||s}</span>`;
 
-let me=null,real={},usersReady=false,users={},sessions=[],settings={target:12},tab="cur",voided=new Set();
+let me=null,users={},real={},sessions=[],audits=[],settings={target:12,entryCode:DEFAULT_CODE},usersReady=false;
+let v="home",arg=null,tab="cur",afilter="",dirty=false,myReal="",unsubs=[];
+const voided=new Set(),FORM=["cert","adm-session","adm-member","adm-settings","profile"];
+const isAdmin=()=>!!me&&ADMINS.includes(me.email);
 const nick=()=>users[me?.uid]?.nick||me?.displayName||"나";
-const isAdmin=()=>me&&ADMINS.includes(me.email);
+const nm=uid=>users[uid]?.nick||"(탈퇴)";
 const mins=s=>{const a=t(s.startAt)??Date.now(),b=s.status=="active"?Date.now():(t(s.endAt)??Date.now());return Math.max(0,(b-a)/6e4)};
 const myActive=()=>sessions.find(s=>s.uid==me?.uid&&s.status=="active");
+const go=(x,a=null)=>{v=x;arg=a;dirty=false;window.scrollTo(0,0);render()};
+const refresh=()=>{if(FORM.includes(v)&&dirty)return;render()};
 
 function stats(key){
   const T=settings.target,by={};
-  for(const[uid,u]of Object.entries(users))by[uid]={uid,name:u.nick||u.name||"?",min:0,hold:0};
+  for(const[uid,u]of Object.entries(users))by[uid]={uid,name:u.nick||"?",min:0,hold:0};
   for(const s of sessions)if(s.weekKey==key&&by[s.uid]){const m=mins(s);if(s.status=="ok")by[s.uid].min+=m;else if(s.status=="hold")by[s.uid].hold+=m}
   const rows=Object.values(by);
   for(const r of rows){const h=r.min/60;r.pen=h>=T?0:h>=10?1:h>=8?2:h>=6?3:5;r.bonus=h>T?Math.round((h-T)*10)/100:0;r.score=Math.round((r.bonus-r.pen)*100)/100}
   return rows.sort((a,b)=>b.score-a.score||b.min-a.min);
 }
+async function audit(target,before,after,reason=""){await addDoc(collection(db,"audit"),{by:me.email,target,before,after,reason,at:serverTimestamp()})}
 
-/* ---------- 화면 ---------- */
-function render(){
-  const app=$("#app");
-  if(!me){app.innerHTML=`<div id="login" class="card"><h1>스터디 공부 인증</h1><p class="sub">구글 계정으로 로그인해요. 처음이면 이름, 닉네임, 초대 코드를 입력해요.</p><p id="err"></p><button class="pri" id="gl" style="width:100%">Google로 로그인</button></div>`;
-    $("#gl").onclick=async()=>{try{await signInWithPopup(auth,new GoogleAuthProvider())}catch(x){console.error(x);$("#err").textContent="로그인하지 못했어요. 팝업이 막혀 있으면 허용해 주세요."}};
-    return;
-  }
-  if(!usersReady){app.innerHTML=`<p class="sub" style="text-align:center;margin-top:20vh">불러오는 중...</p>`;return}
-  if(!users[me.uid]?.nick){profileForm(false);return}
-  const cur=wk(Date.now()),last=wk(Date.now()-7*DAY),key=tab=="cur"?cur:last;
-  const rows=stats(key),mine=stats(cur).find(r=>r.uid==me.uid)||{min:0,hold:0,pen:5,bonus:0,score:-5};
-  const T=settings.target,h=mine.min/60,left=Math.max(0,T-h),a=myActive();
-  const fin=tab!="cur";
+/* ---------- 화면들 ---------- */
+const V={};
+V.home=()=>{
+  const cur=wk(Date.now()),mine=stats(cur).find(r=>r.uid==me.uid)||{min:0,hold:0},T=settings.target,h=mine.min/60,a=myActive();
+  const live=sessions.filter(s=>s.status=="active");
+  return`<h1>이번 주 현황</h1><p class="sub">월요일~일요일 기준</p>
+  <div class="card"><div class="sub">인정된 공부 시간</div><div class="big">${dur(mine.min)}</div>
+  <div class="bar"><i style="width:${Math.min(100,h/T*100)}%"></i></div>
+  <div class="row between"><span class="sub">목표 ${T}시간</span><b>${h>=T?"목표 달성":`${dur((T-h)*60)} 남음`}</b></div>
+  ${mine.hold?`<p class="sub" style="margin:8px 0 0">보류 중인 시간 ${dur(mine.hold)} (관리자 확인 후 반영)</p>`:""}</div>
+  <div class="box">벌점·상점·이주의 공부왕은 <b>일요일 밤 12시(월요일 0시)</b>에 정산됩니다.</div>
+  ${a?`<div class="box warn">공부 중이에요. 종료할 때도 사진 인증이 필요합니다. <button class="btn sm" data-go="cert">종료 인증하기</button></div>`:""}
+  <div class="card"><h2>지금 공부 중</h2>${live.length?`<table><tr><th>닉네임</th><th>장소</th><th class="n">경과</th></tr>${live.map(s=>`<tr><td>${esc(nm(s.uid))}</td><td>${esc(s.place)}</td><td class="n" data-t="${t(s.startAt)||Date.now()}">${clk(Date.now()-(t(s.startAt)||Date.now()))}</td></tr>`).join("")}</table>`:`<p class="sub" style="margin:0">지금 공부 중인 멤버가 없습니다.</p>`}</div>`;
+};
+V.cert=()=>{
+  const a=myActive();
+  return`<h1>공부 인증</h1>
+  <div class="card">${a?`<div class="sub">${esc(a.place)}에서 공부 중</div><div class="big" data-t="${t(a.startAt)||Date.now()}">${clk(Date.now()-(t(a.startAt)||Date.now()))}</div>`:`<div class="sub">현재 상태</div><div class="big">공부 전</div>`}</div>
+  <div class="box">사진에 <b>현재 시각</b>과 <b>공부 장소</b>가 보여야 합니다. 집은 인정되지 않습니다.</div>
+  <div class="card"><h2>${a?"종료 인증":"시작 인증"}</h2>
+  ${a?"":`<label>① 공부 장소<select id="place">${PLACES.map(p=>`<option>${p}</option>`).join("")}</select></label>`}
+  <label>${a?"①":"②"} 사진에 보이는 시각<input id="shown" type="time" value="${hm(Date.now())}"></label>
+  <label>${a?"②":"③"} 사진 선택<input id="photo" type="file" accept="image/*"></label>
+  <p id="err"></p><button class="btn p w" id="go">${a?"종료 인증하기":"시작 인증하기"}</button></div>`;
+};
+V.rec=()=>{
+  const old=Date.now()-7*DAY,my=sessions.filter(s=>s.uid==me.uid).sort((x,y)=>(t(y.startAt)||0)-(t(x.startAt)||0));
+  return`<h1>내 기록</h1>`+(my.length?`<div class="card">${my.map(s=>{const a=t(s.startAt);return`<div style="padding:10px 0;border-bottom:1px solid var(--line)"><div class="row between"><b>${a?md(a)+" "+hm(a):""}${t(s.endAt)?" ~ "+hm(t(s.endAt)):""}</b>${badge(s.status)}</div>
+  <div class="sub">${dur(mins(s))} · ${esc(s.place)}</div>
+  ${!a||a<old?`<div class="sub">사진 보관 기간(7일)이 지났습니다.</div>`:`<button class="btn sm" data-photo="${esc(s.startPhoto)}">시작 사진</button> ${s.endPhoto?`<button class="btn sm" data-photo="${esc(s.endPhoto)}">종료 사진</button>`:""}`}
+  ${s.status=="hold"?`<div class="box warn" style="margin:8px 0 0">사진 시각이 인증 시각과 ${TOL}분 넘게 달라 보류되었습니다. 관리자가 확인합니다.</div>`:""}</div>`}).join("")}</div>`:`<div class="box">아직 기록이 없습니다.</div>`);
+};
+V.rank=()=>{
+  const cur=wk(Date.now()),last=wk(Date.now()-7*DAY),fin=tab!="cur",rows=stats(fin?last:cur);
   if(!fin)rows.sort((x,y)=>y.min-x.min);
   const king=fin&&rows[0]&&rows[0].min>0?rows[0].uid:null;
-  const live=sessions.filter(s=>s.status=="active");
-  const weekAgo=Date.now()-7*DAY;
-  const my=sessions.filter(s=>s.uid==me.uid).sort((x,y)=>(t(y.startAt)||0)-(t(x.startAt)||0));
-  app.innerHTML=`
-  <div class="top"><h1>${esc(nick())}님</h1><span><button class="sm" id="pf">프로필</button> <button class="sm" id="out">로그아웃</button></span></div>
-  <section class="card">
-    <div class="sub">이번 주 (월~일) 인정 시간</div>
-    <div class="clock">${dur(mine.min)}</div>
-    <div class="bar"><i style="width:${Math.min(100,h/T*100)}%"></i></div>
-    <div class="sub">${left>0?`목표 ${T}시간까지 ${dur(left*60)} 남음`:`<b class="ok">목표 달성!</b>`} · 벌점·상점은 일요일 밤 12시에 정산돼요${mine.hold?` · 보류 ${dur(mine.hold)}`:""}</div>
-  </section>
-  <section class="card">
-    ${a?`<div class="sub">${esc(a.place)}에서 공부 중</div><div class="clock" data-t="${t(a.startAt)||Date.now()}">${clk(Date.now()-(t(a.startAt)||Date.now()))}</div><p class="sub">종료할 때도 사진 인증이 필요해요. 24시간 안에 종료하지 않으면 무효예요.</p><button class="pri" id="end" style="width:100%">공부 종료 인증</button>`
-      :`<p class="sub" style="margin-top:0">공부를 시작할 때 현재 시각과 공부 장소가 보이는 사진을 올려 주세요. 집은 인정되지 않아요.</p><button class="pri" id="start" style="width:100%">공부 시작 인증</button>`}
-  </section>
-  <section class="card"><h2>지금 공부 중</h2>${live.length?live.map(s=>`<div class="live"><span>${esc(users[s.uid]?.nick||s.name)} · ${esc(s.place)}</span><b data-t="${t(s.startAt)||Date.now()}">${clk(Date.now()-(t(s.startAt)||Date.now()))}</b></div>`).join(""):`<p class="sub" style="margin:0">지금 공부 중인 멤버가 없어요.</p>`}</section>
-  <section class="card"><div class="row between"><h2>주간 랭킹</h2><div class="tabs"><button class="${tab=="cur"?"on":""}" data-tab="cur">이번 주</button><button class="${tab=="last"?"on":""}" data-tab="last">지난 주</button></div></div>
-    <table><tr><th>이름</th><th class="n">시간</th>${fin?`<th class="n">벌점</th><th class="n">상점</th><th class="n">총점</th>`:""}</tr>
-    ${rows.map(r=>`<tr><td>${r.uid==king?`<span class="crown">공부왕 </span>`:""}${esc(r.name)}</td><td class="n">${(r.min/60).toFixed(1)}h</td>${fin?`<td class="n bad">${r.pen?"-"+r.pen:"0"}</td><td class="n ok">${r.bonus?"+"+r.bonus:"0"}</td><td class="n"><b>${r.score}</b></td>`:""}</tr>`).join("")}</table>
-    <p class="sub" style="margin:8px 0 0">인정된 세션만 합산해요. ${fin?"총점 = 상점 − 벌점, 1위가 이주의 공부왕이에요.":"이번 주 벌점·상점·공부왕은 일요일 밤 12시(월요일 0시)에 정해져요."}</p></section>
-  <section class="card"><h2>내 기록 (최근 2주)</h2>${my.length?my.map(s=>{const[l,c]=STAT[s.status]||["",""],st0=t(s.startAt),old=!st0||st0<weekAgo;return`<div class="ses"><b class="${c}">${l}</b> · ${st0?md(st0)+" "+hm(st0):""}${s.status!="active"&&t(s.endAt)?"~"+hm(t(s.endAt)):""} · ${dur(mins(s))} · ${esc(s.place)}
-    ${old?`<span class="sub">· 사진 보관 기간 만료</span>`:` <button class="sm" data-photo="${esc(s.startPhoto)}">시작 사진</button>${s.endPhoto?` <button class="sm" data-photo="${esc(s.endPhoto)}">종료 사진</button>`:""}`}
-    ${s.status=="hold"?`<div class="sub">사진 시각이 인증 시각과 ${TOL}분 넘게 달라 보류됐어요. 관리자가 확인해요.</div>`:""}</div>`}).join(""):`<p class="sub" style="margin:0">아직 기록이 없어요.</p>`}</section>
-  ${isAdmin()?adminHtml():""}`;
-  $("#out").onclick=()=>signOut(auth);
-  $("#pf").onclick=()=>profileForm(true);
-  $("#start")&&($("#start").onclick=()=>openForm("start"));
-  $("#end")&&($("#end").onclick=()=>openForm("end",a));
-  app.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{tab=b.dataset.tab;render()});
-  app.querySelectorAll("[data-photo]").forEach(b=>b.onclick=async()=>{
-    const d=await getDoc(doc(db,"photos",b.dataset.photo));
-    $("#modal").innerHTML=`<div class="sheet">${d.exists()?`<img src="${d.data().data}" alt="인증 사진" style="width:100%;border-radius:10px">`:`<p>사진 보관 기간(7일)이 지나 삭제됐어요.</p>`}<div class="row" style="margin-top:12px"><button id="cancel">닫기</button></div></div>`;
-    $("#cancel").onclick=()=>$("#modal").innerHTML="";
-  });
-  if(isAdmin())bindAdmin();
-}
-
-async function profileForm(edit){
-  if(!edit&&$("#pfForm"))return;
-  const rn=edit?((await getDoc(doc(db,"profiles",me.uid))).data()?.realName||""):"";
-  const html=`<div id="pfForm"><h3 style="margin-bottom:6px">${edit?"프로필 수정":"처음 오셨네요"}</h3><p class="sub" style="margin-top:0">이름은 관리자만 볼 수 있고, 닉네임은 모든 멤버에게 보여요.</p>
-  <label>이름<input id="pr" value="${esc(rn)}" maxlength="20"></label>
+  return`<h1>주간 랭킹</h1><div class="tabs"><button class="${fin?"":"on"}" data-tab="cur">이번 주</button><button class="${fin?"on":""}" data-tab="last">지난 주</button></div>
+  <div class="card"><table><tr><th>닉네임</th><th class="n">시간</th>${fin?`<th class="n">벌점</th><th class="n">상점</th><th class="n">총점</th>`:""}</tr>
+  ${rows.map(r=>`<tr><td>${r.uid==king?`<span class="badge b-hold">공부왕</span> `:""}${esc(r.name)}</td><td class="n">${(r.min/60).toFixed(1)}h</td>${fin?`<td class="n" style="color:var(--bad)">${r.pen?"-"+r.pen:"0"}</td><td class="n" style="color:var(--ok)">${r.bonus?"+"+r.bonus:"0"}</td><td class="n"><b>${r.score}</b></td>`:""}</tr>`).join("")}</table></div>
+  <div class="box">${fin?"총점 = 상점 − 벌점이며 1위가 이주의 공부왕입니다.":"이번 주 벌점·상점·공부왕은 일요일 밤 12시에 정해집니다."}</div>`;
+};
+V.stat=()=>{
+  const now=Date.now(),mon=Date.parse(wk(now)+"T00:00:00Z"),ok=sessions.filter(s=>s.uid==me.uid&&s.status=="ok"&&t(s.startAt));
+  const by={};ok.forEach(s=>{const k=dkey(t(s.startAt));by[k]=(by[k]||0)+mins(s)});
+  const days=[0,1,2,3,4,5,6].map(i=>new Date(mon+i*DAY).toISOString().slice(0,10)),vals=days.map(d=>by[d]||0),mx=Math.max(60,...vals);
+  const sum=f=>Object.entries(by).filter(([k])=>f(k)).reduce((x,[,m])=>x+m,0);
+  return`<button class="btn sm" data-go="more">← 더보기</button><h1 style="margin-top:12px">통계</h1>
+  <div class="stat"><div><span class="sub">오늘</span><b>${dur(sum(k=>k==dkey(now)))}</b></div><div><span class="sub">이번 주</span><b>${dur(sum(k=>days.includes(k)))}</b></div><div><span class="sub">이번 달</span><b>${dur(sum(k=>k.slice(0,7)==dkey(now).slice(0,7)))}</b></div></div>
+  <div class="card" style="margin-top:14px"><h2>이번 주 요일별 (인정 시간)</h2><div class="dayb">${days.map((d,i)=>`<div><i style="height:${vals[i]/mx*100}%"></i>${"월화수목금토일"[i]}</div>`).join("")}</div></div>`;
+};
+V.more=()=>`<h1>더보기</h1><div class="card" style="padding:4px 16px">
+  <button class="item" data-go="stat">통계 <span>›</span></button>
+  <button class="item" data-go="profile">프로필 수정 <span>›</span></button>
+  <div class="item" style="color:var(--sub)">벌점·벌칙 현황 <span>준비 중</span></div>
+  ${isAdmin()?`<button class="item" data-go="adm"><b>관리자</b> <span>›</span></button>`:""}
+  <button class="item" id="out">로그아웃 <span>›</span></button></div>`;
+V.profile=(setup)=>`${setup?"":`<button class="btn sm" data-go="more">← 더보기</button>`}<h1 style="margin-top:${setup?0:12}px">${setup?"처음 오셨네요":"프로필 수정"}</h1>
+  <div class="box">이름은 본인과 관리자만 볼 수 있고, 닉네임은 모든 멤버에게 보입니다.</div>
+  <div class="card"><label>이름<input id="pr" value="${esc(myReal)}" maxlength="20"></label>
   <label>닉네임<input id="pn" value="${esc(users[me.uid]?.nick||"")}" maxlength="12"></label>
-  ${edit?"":`<label>초대 코드<input id="pi"></label>`}
-  <p id="err"></p><div class="row">${edit?`<button id="cancel">취소</button>`:`<button id="so">로그아웃</button>`}<button class="pri" id="save">저장</button></div></div>`;
-  if(edit){$("#modal").innerHTML=`<div class="sheet">${html}</div>`;$("#cancel").onclick=()=>$("#modal").innerHTML=""}
-  else{$("#app").innerHTML=`<div id="login" class="card">${html}</div>`;$("#so").onclick=()=>signOut(auth)}
-  $("#save").onclick=async()=>{
-    const r=$("#pr").value.trim(),n=$("#pn").value.trim(),err=m=>$("#err").textContent=m;
-    if(!r||!n)return err("이름과 닉네임을 모두 입력해 주세요.");
-    if(!edit&&$("#pi").value!==INVITE)return err("초대 코드가 맞지 않아요.");
-    try{await setDoc(doc(db,"profiles",me.uid),{realName:r,email:me.email});await setDoc(doc(db,"users",me.uid),{nick:n});
-      if(edit)$("#modal").innerHTML="";}catch(x){console.error(x);err("저장하지 못했어요. 잠시 뒤 다시 시도해 주세요.")}
-  };
-}
-let afilter="";
-function adminHtml(){
-  const ids=Object.keys(users),wn=wk(Date.now());
+  ${setup?`<label>입장 코드<input id="pi" autocomplete="off"></label>`:""}
+  <p id="err"></p><div class="row">${setup?`<button class="btn" id="out">로그아웃</button>`:""}<button class="btn p" id="save">저장</button></div></div>`;
+/* 관리자 */
+V.adm=()=>{
+  const hold=sessions.filter(s=>s.status=="hold").length,live=sessions.filter(s=>s.status=="active").length;
+  return`<button class="btn sm" data-go="more">← 더보기</button><h1 style="margin-top:12px">관리자</h1>
+  <div class="stat"><div><span class="sub">회원</span><b>${Object.keys(users).length}명</b></div><div><span class="sub">보류 세션</span><b>${hold}건</b></div><div><span class="sub">공부 중</span><b>${live}명</b></div></div>
+  <div class="card" style="padding:4px 16px;margin-top:14px"><button class="item" data-go="adm-members">회원 관리 <span>›</span></button><button class="item" data-go="adm-sessions">세션 관리 <span>›</span></button><button class="item" data-go="adm-settings">설정 (목표 시간·입장 코드) <span>›</span></button><button class="item" data-go="adm-audit">수정 이력 <span>›</span></button></div>`;
+};
+V["adm-members"]=()=>{
+  const wn=wk(Date.now());
+  return`<button class="btn sm" data-go="adm">← 관리자</button><h1 style="margin-top:12px">회원 관리</h1><div class="card" style="overflow-x:auto"><table><tr><th>닉네임</th><th>이름</th><th>이메일</th><th class="n">이번 주</th></tr>
+  ${Object.keys(users).map(uid=>{const m=sessions.filter(s=>s.uid==uid&&s.weekKey==wn&&s.status=="ok").reduce((x,s)=>x+mins(s),0);return`<tr data-go="adm-member" data-arg="${uid}" style="cursor:pointer"><td><b style="color:var(--pri)">${esc(nm(uid))}</b></td><td>${esc(real[uid]?.realName||"-")}</td><td class="sub">${esc(real[uid]?.email||"-")}</td><td class="n">${(m/60).toFixed(1)}h</td></tr>`}).join("")}</table></div>`;
+};
+V["adm-member"]=()=>{
+  const uid=arg,r=real[uid]||{},list=sessions.filter(s=>s.uid==uid).sort((x,y)=>(t(y.startAt)||0)-(t(x.startAt)||0)).slice(0,15);
+  return`<button class="btn sm" data-go="adm-members">← 회원 목록</button><h1 style="margin-top:12px">회원 상세</h1>
+  <div class="card"><label>닉네임<input id="mn" value="${esc(users[uid]?.nick||"")}" maxlength="12"></label><label>이름<input id="mr" value="${esc(r.realName||"")}" maxlength="20"></label>
+  <label>이메일<input value="${esc(r.email||"")}" disabled></label><p id="err"></p><button class="btn p w" id="save">저장</button></div>
+  <div class="card"><h2>최근 세션</h2>${list.map(s=>`<button class="item" data-go="adm-session" data-arg="${s.id}"><span>${t(s.startAt)?md(t(s.startAt))+" "+hm(t(s.startAt)):""} · ${esc(s.place)} · ${dur(mins(s))}</span>${badge(s.status)}</button>`).join("")||`<p class="sub">세션이 없습니다.</p>`}</div>`;
+};
+V["adm-sessions"]=()=>{
   const list=sessions.filter(s=>!afilter||s.uid==afilter).sort((x,y)=>(t(y.startAt)||0)-(t(x.startAt)||0)).slice(0,60);
-  const mem=ids.map(uid=>{const u=users[uid],r=real[uid]||{},m=sessions.filter(s=>s.uid==uid&&s.weekKey==wn&&s.status=="ok").reduce((x,s)=>x+mins(s),0);
-    return`<tr><td>${esc(u.nick||"-")}</td><td>${esc(r.realName||"-")}</td><td class="sub">${esc(r.email||"-")}</td><td class="n">${(m/60).toFixed(1)}h</td><td><button class="sm" data-mem="${uid}">수정</button></td></tr>`}).join("");
-  return`<section class="card"><div class="row between"><h2>관리자 · 회원 ${ids.length}명</h2><button class="sm" id="tg">목표 시간 (${settings.target}h)</button></div>
-  <div style="overflow-x:auto"><table><tr><th>닉네임</th><th>이름</th><th>이메일</th><th class="n">이번 주</th><th></th></tr>${mem}</table></div></section>
-  <section class="card"><div class="row between"><h2>전체 세션 (최근 60개)</h2><select id="af" style="width:auto;margin:0"><option value="">전체 회원</option>${ids.map(i=>`<option value="${i}" ${afilter==i?"selected":""}>${esc(users[i].nick||i)}</option>`).join("")}</select></div>
-  ${list.map(s=>`<div class="ses"><b>${esc(users[s.uid]?.nick||s.name)}</b>${real[s.uid]?` (${esc(real[s.uid].realName||"")})`:""} · ${t(s.startAt)?md(t(s.startAt))+" "+hm(t(s.startAt)):""}~${t(s.endAt)?hm(t(s.endAt)):""} · ${esc(s.place)} · <b class="${(STAT[s.status]||[])[1]}">${(STAT[s.status]||[s.status])[0]}</b>
-  <div style="margin-top:4px">${s.startPhoto?`<button class="sm" data-photo="${esc(s.startPhoto)}">시작 사진</button> `:""}${s.endPhoto?`<button class="sm" data-photo="${esc(s.endPhoto)}">종료 사진</button> `:""}<button class="sm" data-edit="${s.id}">수정</button> <button class="sm" data-del="${s.id}">삭제</button></div></div>`).join("")||`<p class="sub">세션이 없어요.</p>`}</section>`;
-}
-const parseKst=s=>{const d=new Date(s.trim().replace(" ","T")+":00+09:00");return isNaN(d)?null:d.getTime()};
-const fmtKst=ms=>ms?new Date(ms+KST).toISOString().slice(0,16).replace("T"," "):"";
-async function audit(sid,before,after){await addDoc(collection(db,"audit"),{by:me.email,sid,before,after,at:serverTimestamp()})}
-function bindAdmin(){
-  $("#tg").onclick=async()=>{const v=parseFloat(prompt("주간 목표 시간(시간)",settings.target));if(v>0)await setDoc(doc(db,"settings","main"),{target:v})};
-  $("#af").onchange=e=>{afilter=e.target.value;render()};
-  document.querySelectorAll("[data-mem]").forEach(b=>b.onclick=async()=>{
-    const uid=b.dataset.mem,u=users[uid],r=real[uid]||{};
-    const n=prompt("닉네임",u.nick||"");if(n===null)return;
-    const rn=prompt("이름",r.realName||"");if(rn===null)return;
-    await audit(uid,{nick:u.nick,realName:r.realName},{nick:n,realName:rn});
-    await setDoc(doc(db,"users",uid),{nick:n.trim()||u.nick},{merge:true});
-    await setDoc(doc(db,"profiles",uid),{realName:rn.trim()},{merge:true});
-  });
-  document.querySelectorAll("[data-edit]").forEach(b=>b.onclick=async()=>{
-    const s=sessions.find(x=>x.id==b.dataset.edit);
-    const pl=prompt("장소 ("+PLACES.join(" / ")+")",s.place);if(pl===null)return;
-    const a=prompt("시작 시각 (YYYY-MM-DD HH:MM, 한국 시간)",fmtKst(t(s.startAt)));if(a===null)return;
-    const e=prompt("종료 시각 (비우면 종료 없음)",fmtKst(t(s.endAt)));if(e===null)return;
-    const stt=prompt("상태: ok(인정) / hold(보류) / void(무효) / active(진행 중)",s.status);if(!stt)return;
-    const A=parseKst(a),E=e.trim()?parseKst(e):null;if(!A||(e.trim()&&!E))return alert("시각 형식이 맞지 않아요.");
-    const upd={startAt:Timestamp.fromMillis(A),endAt:E?Timestamp.fromMillis(E):null,status:stt.trim(),place:pl.trim()||s.place,weekKey:wk(E||A)};
-    await audit(s.id,{start:fmtKst(t(s.startAt)),end:fmtKst(t(s.endAt)),status:s.status},{start:a,end:e,status:upd.status});
-    await updateDoc(doc(db,"sessions",s.id),upd);
-  });
-  document.querySelectorAll("[data-del]").forEach(b=>b.onclick=async()=>{if(!confirm("이 세션을 삭제할까요?"))return;try{await deleteDoc(doc(db,"sessions",b.dataset.del));await audit(b.dataset.del,"삭제됨","")}catch(x){console.error(x);alert("삭제하지 못했어요. 오류: "+(x.code||x.message)+"\n(permission-denied면 Firestore 규칙의 관리자 이메일을 확인해 주세요.)");return}for(const k of["start","end"])deleteDoc(doc(db,"photos",b.dataset.del+"_"+k)).catch(()=>{})});
-}
+  return`<button class="btn sm" data-go="adm">← 관리자</button><h1 style="margin-top:12px">세션 관리</h1>
+  <label>회원<select id="af"><option value="">전체 회원</option>${Object.keys(users).map(i=>`<option value="${i}" ${afilter==i?"selected":""}>${esc(nm(i))}</option>`).join("")}</select></label>
+  <div class="card" style="padding:4px 16px">${list.map(s=>`<button class="item" data-go="adm-session" data-arg="${s.id}"><span><b>${esc(nm(s.uid))}</b> · ${t(s.startAt)?md(t(s.startAt))+" "+hm(t(s.startAt)):""}${t(s.endAt)?"~"+hm(t(s.endAt)):""}<br><span class="sub">${esc(s.place)} · ${dur(mins(s))}</span></span>${badge(s.status)}</button>`).join("")||`<p class="sub">세션이 없습니다.</p>`}</div><p class="sub">최근 60개까지 표시합니다.</p>`;
+};
+V["adm-session"]=()=>{
+  const s=sessions.find(x=>x.id==arg);if(!s)return`<div class="box err">세션을 찾을 수 없습니다.</div><button class="btn" data-go="adm-sessions">목록으로</button>`;
+  return`<button class="btn sm" data-go="adm-sessions">← 세션 목록</button><h1 style="margin-top:12px">세션 수정</h1>
+  <div class="card"><label>회원<input value="${esc(nm(s.uid))}${real[s.uid]?` (${esc(real[s.uid].realName||"")})`:""}" disabled></label>
+  <label>장소<select id="f-pl">${PLACES.map(p=>`<option ${p==s.place?"selected":""}>${p}</option>`).join("")}${PLACES.includes(s.place)?"":`<option selected>${esc(s.place)}</option>`}</select></label>
+  <label>시작 (한국 시간)<input id="f-a" type="datetime-local" value="${inp(t(s.startAt))}"></label>
+  <label>종료 (한국 시간)<input id="f-e" type="datetime-local" value="${inp(t(s.endAt))}"></label>
+  <label>상태<select id="f-st">${Object.entries(ST).map(([k,l])=>`<option value="${k}" ${k==s.status?"selected":""}>${l}</option>`).join("")}</select></label>
+  <label>수정 사유 (이력에 남습니다)<input id="f-r" maxlength="60"></label>
+  <div style="margin-bottom:14px">${s.startPhoto?`<button class="btn sm" data-photo="${esc(s.startPhoto)}">시작 사진 보기</button> `:""}${s.endPhoto?`<button class="btn sm" data-photo="${esc(s.endPhoto)}">종료 사진 보기</button>`:""}</div>
+  <p id="err"></p><div class="row"><button class="btn d" id="del">삭제</button><button class="btn p" id="save">저장</button></div></div>`;
+};
+V["adm-settings"]=()=>`<button class="btn sm" data-go="adm">← 관리자</button><h1 style="margin-top:12px">설정</h1>
+  <div class="card"><label>주간 목표 시간 (시간)<input id="st-t" type="number" min="1" step="0.5" value="${settings.target}"></label>
+  <label>입장 코드<input id="st-c" value="${esc(settings.entryCode)}" maxlength="30" autocomplete="off"></label>
+  <p class="sub">처음 가입하는 멤버가 입력하는 코드입니다. 바꿔도 이미 가입한 멤버에게는 영향이 없습니다.</p>
+  <p id="err"></p><button class="btn p w" id="save">저장</button></div>`;
+V["adm-audit"]=()=>`<button class="btn sm" data-go="adm">← 관리자</button><h1 style="margin-top:12px">수정 이력</h1><div class="card">${audits.slice(0,50).map(a=>`<div style="padding:8px 0;border-bottom:1px solid var(--line)"><div class="sub">${t(a.at)?md(t(a.at))+" "+hm(t(a.at)):""} · ${esc(a.by)}</div><div>${esc(a.target||"")} ${esc(JSON.stringify(a.before))} → ${esc(JSON.stringify(a.after))}</div>${a.reason?`<div class="sub">사유: ${esc(a.reason)}</div>`:""}</div>`).join("")||`<p class="sub">이력이 없습니다.</p>`}</div>`;
 
-/* ---------- 인증 ---------- */
-async function sha(file){const h=await crypto.subtle.digest("SHA-256",await file.arrayBuffer());return[...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,"0")).join("")}
-async function shrink(file){
-  const bm=await createImageBitmap(file),k=Math.min(1,800/Math.max(bm.width,bm.height)),c=document.createElement("canvas");
-  c.width=Math.round(bm.width*k);c.height=Math.round(bm.height*k);c.getContext("2d").drawImage(bm,0,0,c.width,c.height);
-  let q=.6,u;do{u=c.toDataURL("image/jpeg",q);q-=.1}while(u.length>450000&&q>.25);
-  return u;
+/* ---------- 렌더 ---------- */
+function render(){
+  const app=$("#app");
+  if(!me){app.innerHTML=`<header class="hd"><b>스터디 공부 인증</b></header><main><div class="card"><h1>로그인</h1><p class="sub">구글 계정으로 로그인합니다. 처음이면 이름, 닉네임, 입장 코드를 입력합니다.</p><p id="err"></p><button class="btn p w" id="gl">Google로 로그인</button></div></main>`;
+    $("#gl").onclick=async()=>{try{await signInWithPopup(auth,new GoogleAuthProvider())}catch(x){console.error(x);$("#err").textContent="로그인하지 못했습니다. 팝업이 차단되어 있으면 허용해 주세요."}};return}
+  if(!usersReady){app.innerHTML=`<main><p class="sub" style="text-align:center;margin-top:20vh">불러오는 중...</p></main>`;return}
+  if(!users[me.uid]?.nick){app.innerHTML=`<header class="hd"><b>스터디 공부 인증</b></header><main>${V.profile(true)}</main>`;bind();return}
+  const on=["home","cert","rec","rank"].includes(v)?v:"more";
+  const nav=[["home","홈"],["cert","인증"],["rec","기록"],["rank","랭킹"],["more","더보기"]];
+  app.innerHTML=`<header class="hd"><b>스터디 공부 인증</b><span>${esc(nick())}${isAdmin()?" · 관리자":""}</span></header>
+  <nav>${nav.map(([k,l])=>`<button class="${on==k?"on":""}" data-go="${k}">${l}</button>`).join("")}</nav><main>${V[v]()}</main>`;
+  bind();
 }
-function openForm(mode,s){
-  const start=mode=="start";
-  $("#modal").innerHTML=`<div class="sheet"><h3 style="margin-bottom:12px">${start?"공부 시작 인증":"공부 종료 인증"}</h3>
-  ${start?`<label>공부 장소<select id="place">${PLACES.map(p=>`<option>${p}</option>`).join("")}</select></label>`:""}
-  <label>사진에 보이는 시각<input id="shown" type="time" value="${hm(Date.now())}"></label>
-  <label>사진 (현재 시각과 공부 장소가 함께 보여야 해요)<input id="photo" type="file" accept="image/*"></label>
-  <p id="err"></p><div class="row"><button id="cancel">취소</button><button class="pri" id="go">인증하기</button></div></div>`;
-  $("#cancel").onclick=()=>$("#modal").innerHTML="";
+const err=m=>{const e=$("#err");if(e)e.textContent=m};
+async function showPhoto(id){
+  const d=await getDoc(doc(db,"photos",id));
+  $("#modal").innerHTML=`<div class="sheet">${d.exists()?`<img src="${d.data().data}" alt="인증 사진" style="width:100%">`:`<p>사진 보관 기간(7일)이 지나 삭제되었습니다.</p>`}<button class="btn w" id="cl" style="margin-top:12px">닫기</button></div>`;
+  $("#cl").onclick=()=>$("#modal").innerHTML="";
+}
+document.addEventListener("click",async e=>{
+  const g=e.target.closest("[data-go]");
+  if(g){if(g.dataset.go=="profile"){myReal=(await getDoc(doc(db,"profiles",me.uid))).data()?.realName||""}go(g.dataset.go,g.dataset.arg||null);return}
+  const p=e.target.closest("[data-photo]");if(p)return showPhoto(p.dataset.photo);
+  const tb=e.target.closest("[data-tab]");if(tb){tab=tb.dataset.tab;render()}
+});
+document.addEventListener("input",()=>{dirty=true});
+
+function bind(){
+  $("#out")&&($("#out").onclick=()=>signOut(auth));
+  $("#af")&&($("#af").onchange=e=>{afilter=e.target.value;render()});
+  if(v=="cert")bindCert();
+  if(!users[me.uid]?.nick||v=="profile")bindProfile(!users[me.uid]?.nick);
+  if(v=="adm-member")bindMember();
+  if(v=="adm-session")bindSession();
+  if(v=="adm-settings")bindSettings();
+}
+async function sha(f){const h=await crypto.subtle.digest("SHA-256",await f.arrayBuffer());return[...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,"0")).join("")}
+async function shrink(f){const bm=await createImageBitmap(f),k=Math.min(1,800/Math.max(bm.width,bm.height)),c=document.createElement("canvas");c.width=Math.round(bm.width*k);c.height=Math.round(bm.height*k);c.getContext("2d").drawImage(bm,0,0,c.width,c.height);let q=.6,u;do{u=c.toDataURL("image/jpeg",q);q-=.1}while(u.length>450000&&q>.25);return u}
+function bindCert(){
   $("#go").onclick=async()=>{
-    const err=m=>{$("#err").textContent=m;$("#go").disabled=false};
+    const a=myActive(),mode=a?"end":"start",btn=$("#go");
     try{
       const f=$("#photo").files[0],shown=$("#shown").value;
       if(!f||!shown)return err("사진과 사진에 보이는 시각을 입력해 주세요.");
-      $("#go").disabled=true;$("#err").textContent="올리는 중...";
+      btn.disabled=true;err("올리는 중입니다...");
       const[hh,mm]=shown.split(":").map(Number),nowMin=Math.floor(((Date.now()+KST)%DAY)/6e4);
       let d=Math.abs(hh*60+mm-nowMin);d=Math.min(d,1440-d);const ok=d<=TOL;
       const hash=await sha(f);
-      if((await getDoc(doc(db,"hashes",hash))).exists())return err("이미 인증에 사용한 사진이에요.");
-      const img=await shrink(f),id=start?doc(collection(db,"sessions")).id:s.id,url=`${id}_${mode}`;
-      await setDoc(doc(db,"photos",url),{uid:me.uid,data:img,at:serverTimestamp()});
+      if((await getDoc(doc(db,"hashes",hash))).exists()){btn.disabled=false;return err("이미 인증에 사용한 사진입니다. 새로 찍은 사진을 올려 주세요.")}
+      const img=await shrink(f),id=a?a.id:doc(collection(db,"sessions")).id,pid=`${id}_${mode}`;
+      await setDoc(doc(db,"photos",pid),{uid:me.uid,data:img,at:serverTimestamp()});
       await setDoc(doc(db,"hashes",hash),{uid:me.uid,at:serverTimestamp()});
-      if(start)await setDoc(doc(db,"sessions",id),{uid:me.uid,name:nick(),place:$("#place").value,startAt:serverTimestamp(),startShown:shown,startOk:ok,startPhoto:url,status:"active",weekKey:wk(Date.now())});
-      else await updateDoc(doc(db,"sessions",id),{endAt:serverTimestamp(),endShown:shown,endOk:ok,endPhoto:url,status:(s.startOk&&ok)?"ok":"hold",weekKey:wk(Date.now())});
-      $("#modal").innerHTML="";
-      if(!ok)alert(`사진 시각이 지금과 ${TOL}분 넘게 달라서 보류 처리됐어요. 관리자가 확인해요.`);
-    }catch(x){console.error(x);err("인증하지 못했어요. 잠시 뒤 다시 시도해 주세요.")}
+      if(!a)await setDoc(doc(db,"sessions",id),{uid:me.uid,place:$("#place").value,startAt:serverTimestamp(),startShown:shown,startOk:ok,startPhoto:pid,status:"active",weekKey:wk(Date.now())});
+      else await updateDoc(doc(db,"sessions",id),{endAt:serverTimestamp(),endShown:shown,endOk:ok,endPhoto:pid,status:(a.startOk&&ok)?"ok":"hold",weekKey:wk(Date.now())});
+      if(!ok)alert(`사진 시각이 지금과 ${TOL}분 넘게 달라 보류 처리되었습니다. 관리자가 확인합니다.`);
+      go(a?"rec":"home");
+    }catch(x){console.error(x);btn.disabled=false;err("인증하지 못했습니다. 잠시 뒤 다시 시도해 주세요.")}
+  };
+}
+function bindProfile(setup){
+  $("#save").onclick=async()=>{
+    const r=$("#pr").value.trim(),n=$("#pn").value.trim();
+    if(!r||!n)return err("이름과 닉네임을 모두 입력해 주세요.");
+    if(setup&&$("#pi").value.trim()!==(settings.entryCode||DEFAULT_CODE))return err("입장 코드가 맞지 않습니다. 방장에게 확인해 주세요.");
+    try{await setDoc(doc(db,"profiles",me.uid),{realName:r,email:me.email},{merge:true});await setDoc(doc(db,"users",me.uid),{nick:n});myReal=r;if(!setup)go("more")}
+    catch(x){console.error(x);err("저장하지 못했습니다. 잠시 뒤 다시 시도해 주세요.")}
+  };
+}
+function bindMember(){
+  $("#save").onclick=async()=>{
+    const uid=arg,n=$("#mn").value.trim(),r=$("#mr").value.trim();if(!n)return err("닉네임을 입력해 주세요.");
+    try{await audit(uid,{nick:users[uid]?.nick,name:real[uid]?.realName},{nick:n,name:r},"회원 정보 수정");
+      await setDoc(doc(db,"users",uid),{nick:n},{merge:true});await setDoc(doc(db,"profiles",uid),{realName:r},{merge:true});go("adm-members")}
+    catch(x){console.error(x);err("저장하지 못했습니다. 오류: "+(x.code||x.message))}
+  };
+}
+function bindSession(){
+  const s=sessions.find(x=>x.id==arg);if(!s)return;
+  $("#save").onclick=async()=>{
+    const A=parse($("#f-a").value),E=parse($("#f-e").value),st=$("#f-st").value;
+    if(!A)return err("시작 시각을 입력해 주세요.");
+    if(E&&E<=A)return err("종료 시각이 시작 시각보다 늦어야 합니다.");
+    if(st!="active"&&!E)return err("진행 중이 아닌 세션은 종료 시각이 필요합니다.");
+    try{
+      await audit(s.id,{place:s.place,start:inp(t(s.startAt)),end:inp(t(s.endAt)),status:s.status},{place:$("#f-pl").value,start:inp(A),end:inp(E),status:st},$("#f-r").value.trim());
+      await updateDoc(doc(db,"sessions",s.id),{place:$("#f-pl").value,startAt:Timestamp.fromMillis(A),endAt:E?Timestamp.fromMillis(E):null,status:st,weekKey:wk(E||A)});
+      go("adm-sessions");
+    }catch(x){console.error(x);err("저장하지 못했습니다. 오류: "+(x.code||x.message)+(x.code=="permission-denied"?" (Firestore 규칙의 관리자 이메일을 확인해 주세요.)":""))}
+  };
+  $("#del").onclick=async()=>{
+    if(!confirm("이 세션을 삭제할까요? 되돌릴 수 없습니다."))return;
+    try{
+      await deleteDoc(doc(db,"sessions",s.id));
+      for(const k of["start","end"])deleteDoc(doc(db,"photos",`${s.id}_${k}`)).catch(()=>{});
+      audit(s.id,{place:s.place,start:inp(t(s.startAt)),end:inp(t(s.endAt)),status:s.status},"삭제됨",$("#f-r").value.trim()).catch(()=>{});
+      go("adm-sessions");
+    }catch(x){console.error(x);err("삭제하지 못했습니다. 오류: "+(x.code||x.message)+(x.code=="permission-denied"?" (Firestore 규칙의 관리자 이메일을 확인해 주세요.)":""))}
+  };
+}
+function bindSettings(){
+  $("#save").onclick=async()=>{
+    const T=parseFloat($("#st-t").value),C=$("#st-c").value.trim();
+    if(!(T>0))return err("목표 시간을 확인해 주세요.");if(C.length<4)return err("입장 코드는 4자 이상으로 입력해 주세요.");
+    try{await audit("settings",{target:settings.target,entryCode:settings.entryCode},{target:T,entryCode:C},"설정 변경");await setDoc(doc(db,"settings","main"),{target:T,entryCode:C},{merge:true});go("adm")}
+    catch(x){console.error(x);err("저장하지 못했습니다. 오류: "+(x.code||x.message))}
   };
 }
 
-/* ---------- 데이터 구독 ---------- */
-let unsubs=[];
+/* ---------- 데이터 ---------- */
 onAuthStateChanged(auth,u=>{
-  unsubs.forEach(f=>f());unsubs=[];me=u;
-  if(!u){users={};real={};usersReady=false;sessions=[];render();return}
+  unsubs.forEach(f=>f());unsubs=[];me=u;v="home";
+  if(!u){users={};real={};sessions=[];usersReady=false;render();return}
   setDoc(doc(db,"profiles",u.uid),{email:u.email},{merge:true}).catch(()=>{});
   getDocs(query(collection(db,"photos"),where("at","<",Timestamp.fromMillis(Date.now()-7*DAY)))).then(q=>q.forEach(d=>deleteDoc(d.ref))).catch(()=>{});
-  const keys=[wk(Date.now()),wk(Date.now()-7*DAY)];
-  unsubs.push(onSnapshot(collection(db,"users"),q=>{users={};q.forEach(d=>users[d.id]=d.data());usersReady=true;render()}));
-  if(isAdmin())unsubs.push(onSnapshot(collection(db,"profiles"),q=>{real={};q.forEach(d=>real[d.id]=d.data());render()}));
+  const keys=Array.from({length:6},(_,i)=>wk(Date.now()-i*7*DAY));
+  unsubs.push(onSnapshot(collection(db,"users"),q=>{users={};q.forEach(d=>users[d.id]=d.data());usersReady=true;refresh()}));
+  if(isAdmin()){
+    unsubs.push(onSnapshot(collection(db,"profiles"),q=>{real={};q.forEach(d=>real[d.id]=d.data());refresh()}));
+    unsubs.push(onSnapshot(collection(db,"audit"),q=>{audits=q.docs.map(d=>d.data()).sort((a,b)=>(t(b.at)||0)-(t(a.at)||0));refresh()}));
+  }
   unsubs.push(onSnapshot(isAdmin()?collection(db,"sessions"):query(collection(db,"sessions"),where("weekKey","in",keys)),q=>{
     sessions=q.docs.map(d=>({id:d.id,...d.data()}));
     for(const s of sessions)if(s.status=="active"&&t(s.startAt)&&Date.now()-t(s.startAt)>DAY&&(s.uid==me.uid||isAdmin())&&!voided.has(s.id)){voided.add(s.id);updateDoc(doc(db,"sessions",s.id),{status:"void"})}
-    render();
+    refresh();
   }));
-  unsubs.push(onSnapshot(doc(db,"settings","main"),d=>{if(d.exists())settings={target:12,...d.data()};render()}));
+  unsubs.push(onSnapshot(doc(db,"settings","main"),d=>{settings={target:12,entryCode:DEFAULT_CODE,...(d.exists()?d.data():{})};refresh()}));
 });
 setInterval(()=>document.querySelectorAll("[data-t]").forEach(e=>e.textContent=clk(Date.now()-+e.dataset.t)),1000);
 render();
