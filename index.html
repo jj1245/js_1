@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>스터디 공부 인증</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<style>
+:root{--bg:#eef2f5;--card:#fff;--ink:#16243a;--sub:#5d6b7e;--line:#d6dde5;--acc:#2456e6;--acc-t:#fff;--ok:#12805a;--bad:#c93a45;--hold:#b7791f;color-scheme:light}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1722;--card:#17212f;--ink:#e7edf5;--sub:#9aa9bc;--line:#283447;--acc:#6d93ff;--acc-t:#0b1220;--ok:#43c79a;--bad:#ff7b84;--hold:#e5b45c;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 Pretendard,system-ui,sans-serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+main{max-width:620px;margin:0 auto;padding:16px}
+h1,h2,h3{margin:0;line-height:1.25}h2{font-size:16px;margin-bottom:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+button,input,select{font:inherit;color:inherit}
+button{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:9px 14px;cursor:pointer;min-height:40px}
+button.pri{background:var(--acc);color:var(--acc-t);border-color:var(--acc);font-weight:700}
+button.sm{padding:3px 9px;min-height:30px;font-size:13px}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+input,select{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--bg);margin:4px 0 12px}
+label{display:block;font-size:13px;color:var(--sub)}
+.clock{font-size:46px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1.1}
+.sub{color:var(--sub);font-size:13px}
+.bar{height:10px;background:var(--bg);border-radius:6px;overflow:hidden;margin:10px 0 6px;border:1px solid var(--line)}
+.bar i{display:block;height:100%;background:var(--acc)}
+.row{display:flex;gap:8px;align-items:center}.row>*{flex:1}.between{justify-content:space-between}.between>*{flex:none}
+.tabs{display:flex;gap:6px;margin-bottom:10px}.tabs button{flex:none}.tabs .on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+table{width:100%;border-collapse:collapse;font-size:14px}td,th{padding:7px 4px;border-bottom:1px solid var(--line);text-align:left}th{color:var(--sub);font-weight:500;font-size:12px}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.crown{color:var(--hold);font-weight:700}.bad{color:var(--bad)}.ok{color:var(--ok)}.hold{color:var(--hold)}.void{color:var(--sub)}
+.live{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)}.live:last-child{border:0}
+.ses{padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}.ses:last-child{border:0}
+#modal:not(:empty){position:fixed;inset:0;background:#000a;display:flex;align-items:flex-end;justify-content:center;z-index:9}
+.sheet{background:var(--card);width:100%;max-width:620px;border-radius:18px 18px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom))}
+#err{color:var(--bad);min-height:22px;margin:0 0 8px;font-size:14px}
+#login{max-width:380px;margin:12vh auto 0}
+@media(prefers-reduced-motion:no-preference){.bar i{transition:width .4s}}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<div id="modal"></div>
+
+<script type="module">
+/* ====== 설정: 여기만 바꾸세요 ====== */
+const firebaseConfig = {
+  apiKey: "AIzaSyAqkPKXmLLVnC1ge2KiID-EP5I7g6BJFQM",
+  authDomain: "js-10-27.firebaseapp.com",
+  projectId: "js-10-27",
+  storageBucket: "js-10-27.firebasestorage.app",
+  messagingSenderId: "954452462943",
+  appId: "1:954452462943:web:25e4c05577b24901d9faea",
+  measurementId: "G-7PKK4Q2GB0"
+};
+const ADMINS = ["4155yujin@gmail.com"];   // 관리자 이메일 (firestore.rules에도 동일하게)
+const INVITE = "study2026";           // 회원가입 초대 코드
+const TOL = 10;                       // 사진 시각 허용 오차(분)
+/* ================================== */
+
+const V="10.14.1",G=`https://www.gstatic.com/firebasejs/${V}/`;
+const {initializeApp}=await import(G+"firebase-app.js");
+const {getAuth,onAuthStateChanged,GoogleAuthProvider,signInWithPopup,signOut}=await import(G+"firebase-auth.js");
+const {getFirestore,collection,doc,addDoc,setDoc,getDoc,getDocs,updateDoc,deleteDoc,onSnapshot,query,where,serverTimestamp,Timestamp}=await import(G+"firebase-firestore.js");
+const fb=initializeApp(firebaseConfig),auth=getAuth(fb),db=getFirestore(fb);
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const KST=9*36e5,DAY=864e5,PLACES=["도서관","스터디카페(스카)","카페","기타 공부 공간"];
+const wk=ms=>{const k=new Date(ms+KST);k.setUTCDate(k.getUTCDate()-(k.getUTCDay()+6)%7);return k.toISOString().slice(0,10)};
+const hm=ms=>new Date(ms+KST).toISOString().slice(11,16);
+const md=ms=>new Date(ms+KST).toISOString().slice(5,10).replace("-","/");
+const dur=m=>`${Math.floor(m/60)}시간 ${String(Math.round(m%60)).padStart(2,"0")}분`;
+const clk=ms=>{const s=Math.max(0,Math.floor(ms/1e3));return [s/3600|0,s%3600/60|0,s%60].map(n=>String(n).padStart(2,"0")).join(":")};
+const t=x=>x?.toMillis?x.toMillis():null;
+const STAT={ok:["인정","ok"],hold:["보류","hold"],void:["무효","void"],active:["진행 중","ok"]};
+
+let me=null,real={},usersReady=false,users={},sessions=[],settings={target:12},tab="cur",voided=new Set();
+const nick=()=>users[me?.uid]?.nick||me?.displayName||"나";
+const isAdmin=()=>me&&ADMINS.includes(me.email);
+const mins=s=>{const a=t(s.startAt)??Date.now(),b=s.status=="active"?Date.now():(t(s.endAt)??Date.now());return Math.max(0,(b-a)/6e4)};
+const myActive=()=>sessions.find(s=>s.uid==me?.uid&&s.status=="active");
+
+function stats(key){
+  const T=settings.target,by={};
+  for(const[uid,u]of Object.entries(users))by[uid]={uid,name:u.nick||u.name||"?",min:0,hold:0};
+  for(const s of sessions)if(s.weekKey==key&&by[s.uid]){const m=mins(s);if(s.status=="ok")by[s.uid].min+=m;else if(s.status=="hold")by[s.uid].hold+=m}
+  const rows=Object.values(by);
+  for(const r of rows){const h=r.min/60;r.pen=h>=T?0:h>=10?1:h>=8?2:h>=6?3:5;r.bonus=h>T?Math.round((h-T)*10)/100:0;r.score=Math.round((r.bonus-r.pen)*100)/100}
+  return rows.sort((a,b)=>b.score-a.score||b.min-a.min);
+}
+
+/* ---------- 화면 ---------- */
+function render(){
+  const app=$("#app");
+  if(!me){app.innerHTML=`<div id="login" class="card"><h1>스터디 공부 인증</h1><p class="sub">구글 계정으로 로그인해요. 처음이면 이름, 닉네임, 초대 코드를 입력해요.</p><p id="err"></p><button class="pri" id="gl" style="width:100%">Google로 로그인</button></div>`;
+    $("#gl").onclick=async()=>{try{await signInWithPopup(auth,new GoogleAuthProvider())}catch(x){console.error(x);$("#err").textContent="로그인하지 못했어요. 팝업이 막혀 있으면 허용해 주세요."}};
+    return;
+  }
+  if(!usersReady){app.innerHTML=`<p class="sub" style="text-align:center;margin-top:20vh">불러오는 중...</p>`;return}
+  if(!users[me.uid]?.nick){profileForm(false);return}
+  const cur=wk(Date.now()),last=wk(Date.now()-7*DAY),key=tab=="cur"?cur:last;
+  const rows=stats(key),mine=stats(cur).find(r=>r.uid==me.uid)||{min:0,hold:0,pen:5,bonus:0,score:-5};
+  const T=settings.target,h=mine.min/60,left=Math.max(0,T-h),a=myActive();
+  const king=rows[0]&&rows[0].min>0?rows[0].uid:null;
+  const live=sessions.filter(s=>s.status=="active");
+  const weekAgo=Date.now()-7*DAY;
+  const my=sessions.filter(s=>s.uid==me.uid).sort((x,y)=>(t(y.startAt)||0)-(t(x.startAt)||0));
+  app.innerHTML=`
+  <div class="top"><h1>${esc(nick())}님</h1><span><button class="sm" id="pf">프로필</button> <button class="sm" id="out">로그아웃</button></span></div>
+  <section class="card">
+    <div class="sub">이번 주 (월~일) 인정 시간</div>
+    <div class="clock">${dur(mine.min)}</div>
+    <div class="bar"><i style="width:${Math.min(100,h/T*100)}%"></i></div>
+    <div class="sub">${left>0?`목표 ${T}시간까지 ${dur(left*60)} 남음 · 지금 마감이면 <b class="bad">-${mine.pen}점</b>`:`목표 달성 · 상점 <b class="ok">+${mine.bonus}</b>`}${mine.hold?` · 보류 ${dur(mine.hold)}`:""}</div>
+  </section>
+  <section class="card">
+    ${a?`<div class="sub">${esc(a.place)}에서 공부 중</div><div class="clock" data-t="${t(a.startAt)||Date.now()}">${clk(Date.now()-(t(a.startAt)||Date.now()))}</div><p class="sub">종료할 때도 사진 인증이 필요해요. 24시간 안에 종료하지 않으면 무효예요.</p><button class="pri" id="end" style="width:100%">공부 종료 인증</button>`
+      :`<p class="sub" style="margin-top:0">공부를 시작할 때 현재 시각과 공부 장소가 보이는 사진을 올려 주세요. 집은 인정되지 않아요.</p><button class="pri" id="start" style="width:100%">공부 시작 인증</button>`}
+  </section>
+  <section class="card"><h2>지금 공부 중</h2>${live.length?live.map(s=>`<div class="live"><span>${esc(users[s.uid]?.nick||s.name)} · ${esc(s.place)}</span><b data-t="${t(s.startAt)||Date.now()}">${clk(Date.now()-(t(s.startAt)||Date.now()))}</b></div>`).join(""):`<p class="sub" style="margin:0">지금 공부 중인 멤버가 없어요.</p>`}</section>
+  <section class="card"><div class="row between"><h2>주간 랭킹</h2><div class="tabs"><button class="${tab=="cur"?"on":""}" data-tab="cur">이번 주</button><button class="${tab=="last"?"on":""}" data-tab="last">지난 주</button></div></div>
+    <table><tr><th>이름</th><th class="n">시간</th><th class="n">벌점</th><th class="n">상점</th><th class="n">총점</th></tr>
+    ${rows.map(r=>`<tr><td>${r.uid==king?`<span class="crown">공부왕 </span>`:""}${esc(r.name)}</td><td class="n">${(r.min/60).toFixed(1)}h</td><td class="n bad">${r.pen?"-"+r.pen:"0"}</td><td class="n ok">${r.bonus?"+"+r.bonus:"0"}</td><td class="n"><b>${r.score}</b></td></tr>`).join("")}</table>
+    <p class="sub" style="margin:8px 0 0">인정된 세션만 합산해요. 총점 = 상점 − 벌점.</p></section>
+  <section class="card"><h2>내 기록 (최근 2주)</h2>${my.length?my.map(s=>{const[l,c]=STAT[s.status]||["",""],st0=t(s.startAt),old=!st0||st0<weekAgo;return`<div class="ses"><b class="${c}">${l}</b> · ${st0?md(st0)+" "+hm(st0):""}${s.status!="active"&&t(s.endAt)?"~"+hm(t(s.endAt)):""} · ${dur(mins(s))} · ${esc(s.place)}
+    ${old?`<span class="sub">· 사진 보관 기간 만료</span>`:` <button class="sm" data-photo="${esc(s.startPhoto)}">시작 사진</button>${s.endPhoto?` <button class="sm" data-photo="${esc(s.endPhoto)}">종료 사진</button>`:""}`}
+    ${s.status=="hold"?`<div class="sub">사진 시각이 인증 시각과 ${TOL}분 넘게 달라 보류됐어요. 관리자가 확인해요.</div>`:""}</div>`}).join(""):`<p class="sub" style="margin:0">아직 기록이 없어요.</p>`}</section>
+  ${isAdmin()?adminHtml(sessions.filter(s=>s.weekKey==cur||s.weekKey==last)):""}`;
+  $("#out").onclick=()=>signOut(auth);
+  $("#pf").onclick=()=>profileForm(true);
+  $("#start")&&($("#start").onclick=()=>openForm("start"));
+  $("#end")&&($("#end").onclick=()=>openForm("end",a));
+  app.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{tab=b.dataset.tab;render()});
+  app.querySelectorAll("[data-photo]").forEach(b=>b.onclick=async()=>{
+    const d=await getDoc(doc(db,"photos",b.dataset.photo));
+    $("#modal").innerHTML=`<div class="sheet">${d.exists()?`<img src="${d.data().data}" alt="인증 사진" style="width:100%;border-radius:10px">`:`<p>사진 보관 기간(7일)이 지나 삭제됐어요.</p>`}<div class="row" style="margin-top:12px"><button id="cancel">닫기</button></div></div>`;
+    $("#cancel").onclick=()=>$("#modal").innerHTML="";
+  });
+  if(isAdmin())bindAdmin();
+}
+
+async function profileForm(edit){
+  if(!edit&&$("#pfForm"))return;
+  const rn=edit?((await getDoc(doc(db,"profiles",me.uid))).data()?.realName||""):"";
+  const html=`<div id="pfForm"><h3 style="margin-bottom:6px">${edit?"프로필 수정":"처음 오셨네요"}</h3><p class="sub" style="margin-top:0">이름은 관리자만 볼 수 있고, 닉네임은 모든 멤버에게 보여요.</p>
+  <label>이름<input id="pr" value="${esc(rn)}" maxlength="20"></label>
+  <label>닉네임<input id="pn" value="${esc(users[me.uid]?.nick||"")}" maxlength="12"></label>
+  ${edit?"":`<label>초대 코드<input id="pi"></label>`}
+  <p id="err"></p><div class="row">${edit?`<button id="cancel">취소</button>`:`<button id="so">로그아웃</button>`}<button class="pri" id="save">저장</button></div></div>`;
+  if(edit){$("#modal").innerHTML=`<div class="sheet">${html}</div>`;$("#cancel").onclick=()=>$("#modal").innerHTML=""}
+  else{$("#app").innerHTML=`<div id="login" class="card">${html}</div>`;$("#so").onclick=()=>signOut(auth)}
+  $("#save").onclick=async()=>{
+    const r=$("#pr").value.trim(),n=$("#pn").value.trim(),err=m=>$("#err").textContent=m;
+    if(!r||!n)return err("이름과 닉네임을 모두 입력해 주세요.");
+    if(!edit&&$("#pi").value!==INVITE)return err("초대 코드가 맞지 않아요.");
+    try{await setDoc(doc(db,"profiles",me.uid),{realName:r});await setDoc(doc(db,"users",me.uid),{nick:n});
+      if(edit)$("#modal").innerHTML="";}catch(x){console.error(x);err("저장하지 못했어요. 잠시 뒤 다시 시도해 주세요.")}
+  };
+}
+function adminHtml(list){
+  list=list.sort((x,y)=>(t(y.startAt)||0)-(t(x.startAt)||0));
+  return`<section class="card"><div class="row between"><h2>관리자</h2><button class="sm" id="tg">목표 시간 (${settings.target}h)</button></div>
+  ${list.map(s=>`<div class="ses">${esc(users[s.uid]?.nick||s.name)}${real[s.uid]?` (${esc(real[s.uid].realName)})`:""} · ${t(s.startAt)?md(t(s.startAt))+" "+hm(t(s.startAt)):""}~${t(s.endAt)?hm(t(s.endAt)):""} · <b class="${(STAT[s.status]||[])[1]}">${(STAT[s.status]||[s.status])[0]}</b>
+  <button class="sm" data-edit="${s.id}">수정</button> <button class="sm" data-del="${s.id}">삭제</button></div>`).join("")||`<p class="sub">세션이 없어요.</p>`}</section>`;
+}
+const parseKst=s=>{const d=new Date(s.trim().replace(" ","T")+":00+09:00");return isNaN(d)?null:d.getTime()};
+const fmtKst=ms=>ms?new Date(ms+KST).toISOString().slice(0,16).replace("T"," "):"";
+async function audit(sid,before,after){await addDoc(collection(db,"audit"),{by:me.email,sid,before,after,at:serverTimestamp()})}
+function bindAdmin(){
+  $("#tg").onclick=async()=>{const v=parseFloat(prompt("주간 목표 시간(시간)",settings.target));if(v>0)await setDoc(doc(db,"settings","main"),{target:v})};
+  document.querySelectorAll("[data-edit]").forEach(b=>b.onclick=async()=>{
+    const s=sessions.find(x=>x.id==b.dataset.edit);
+    const a=prompt("시작 시각 (YYYY-MM-DD HH:MM, 한국 시간)",fmtKst(t(s.startAt)));if(a===null)return;
+    const e=prompt("종료 시각 (비우면 종료 없음)",fmtKst(t(s.endAt)));if(e===null)return;
+    const stt=prompt("상태: ok(인정) / hold(보류) / void(무효) / active(진행 중)",s.status);if(!stt)return;
+    const A=parseKst(a),E=e.trim()?parseKst(e):null;if(!A||(e.trim()&&!E))return alert("시각 형식이 맞지 않아요.");
+    const upd={startAt:Timestamp.fromMillis(A),endAt:E?Timestamp.fromMillis(E):null,status:stt.trim(),weekKey:wk(E||A)};
+    await audit(s.id,{start:fmtKst(t(s.startAt)),end:fmtKst(t(s.endAt)),status:s.status},{start:a,end:e,status:upd.status});
+    await updateDoc(doc(db,"sessions",s.id),upd);
+  });
+  document.querySelectorAll("[data-del]").forEach(b=>b.onclick=async()=>{if(!confirm("이 세션을 삭제할까요?"))return;await audit(b.dataset.del,"삭제됨","");await deleteDoc(doc(db,"sessions",b.dataset.del))});
+}
+
+/* ---------- 인증 ---------- */
+async function sha(file){const h=await crypto.subtle.digest("SHA-256",await file.arrayBuffer());return[...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,"0")).join("")}
+async function shrink(file){
+  const bm=await createImageBitmap(file),k=Math.min(1,800/Math.max(bm.width,bm.height)),c=document.createElement("canvas");
+  c.width=Math.round(bm.width*k);c.height=Math.round(bm.height*k);c.getContext("2d").drawImage(bm,0,0,c.width,c.height);
+  let q=.6,u;do{u=c.toDataURL("image/jpeg",q);q-=.1}while(u.length>450000&&q>.25);
+  return u;
+}
+function openForm(mode,s){
+  const start=mode=="start";
+  $("#modal").innerHTML=`<div class="sheet"><h3 style="margin-bottom:12px">${start?"공부 시작 인증":"공부 종료 인증"}</h3>
+  ${start?`<label>공부 장소<select id="place">${PLACES.map(p=>`<option>${p}</option>`).join("")}</select></label>`:""}
+  <label>사진에 보이는 시각<input id="shown" type="time" value="${hm(Date.now())}"></label>
+  <label>사진 (현재 시각과 공부 장소가 함께 보여야 해요)<input id="photo" type="file" accept="image/*"></label>
+  <p id="err"></p><div class="row"><button id="cancel">취소</button><button class="pri" id="go">인증하기</button></div></div>`;
+  $("#cancel").onclick=()=>$("#modal").innerHTML="";
+  $("#go").onclick=async()=>{
+    const err=m=>{$("#err").textContent=m;$("#go").disabled=false};
+    try{
+      const f=$("#photo").files[0],shown=$("#shown").value;
+      if(!f||!shown)return err("사진과 사진에 보이는 시각을 입력해 주세요.");
+      $("#go").disabled=true;$("#err").textContent="올리는 중...";
+      const[hh,mm]=shown.split(":").map(Number),nowMin=Math.floor(((Date.now()+KST)%DAY)/6e4);
+      let d=Math.abs(hh*60+mm-nowMin);d=Math.min(d,1440-d);const ok=d<=TOL;
+      const hash=await sha(f);
+      if((await getDoc(doc(db,"hashes",hash))).exists())return err("이미 인증에 사용한 사진이에요.");
+      const img=await shrink(f),id=start?doc(collection(db,"sessions")).id:s.id,url=`${id}_${mode}`;
+      await setDoc(doc(db,"photos",url),{uid:me.uid,data:img,at:serverTimestamp()});
+      await setDoc(doc(db,"hashes",hash),{uid:me.uid,at:serverTimestamp()});
+      if(start)await setDoc(doc(db,"sessions",id),{uid:me.uid,name:nick(),place:$("#place").value,startAt:serverTimestamp(),startShown:shown,startOk:ok,startPhoto:url,status:"active",weekKey:wk(Date.now())});
+      else await updateDoc(doc(db,"sessions",id),{endAt:serverTimestamp(),endShown:shown,endOk:ok,endPhoto:url,status:(s.startOk&&ok)?"ok":"hold",weekKey:wk(Date.now())});
+      $("#modal").innerHTML="";
+      if(!ok)alert(`사진 시각이 지금과 ${TOL}분 넘게 달라서 보류 처리됐어요. 관리자가 확인해요.`);
+    }catch(x){console.error(x);err("인증하지 못했어요. 잠시 뒤 다시 시도해 주세요.")}
+  };
+}
+
+/* ---------- 데이터 구독 ---------- */
+let unsubs=[];
+onAuthStateChanged(auth,u=>{
+  unsubs.forEach(f=>f());unsubs=[];me=u;
+  if(!u){users={};real={};usersReady=false;sessions=[];render();return}
+  getDocs(query(collection(db,"photos"),where("at","<",Timestamp.fromMillis(Date.now()-7*DAY)))).then(q=>q.forEach(d=>deleteDoc(d.ref))).catch(()=>{});
+  const keys=[wk(Date.now()),wk(Date.now()-7*DAY)];
+  unsubs.push(onSnapshot(collection(db,"users"),q=>{users={};q.forEach(d=>users[d.id]=d.data());usersReady=true;render()}));
+  if(isAdmin())unsubs.push(onSnapshot(collection(db,"profiles"),q=>{real={};q.forEach(d=>real[d.id]=d.data());render()}));
+  unsubs.push(onSnapshot(query(collection(db,"sessions"),where("weekKey","in",keys)),q=>{
+    sessions=q.docs.map(d=>({id:d.id,...d.data()}));
+    for(const s of sessions)if(s.status=="active"&&t(s.startAt)&&Date.now()-t(s.startAt)>DAY&&(s.uid==me.uid||isAdmin())&&!voided.has(s.id)){voided.add(s.id);updateDoc(doc(db,"sessions",s.id),{status:"void"})}
+    render();
+  }));
+  unsubs.push(onSnapshot(doc(db,"settings","main"),d=>{if(d.exists())settings={target:12,...d.data()};render()}));
+});
+setInterval(()=>document.querySelectorAll("[data-t]").forEach(e=>e.textContent=clk(Date.now()-+e.dataset.t)),1000);
+render();
+</script>
+</body>
+</html>
