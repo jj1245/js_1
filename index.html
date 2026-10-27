@@ -103,7 +103,9 @@ function render(){
   const cur=wk(Date.now()),last=wk(Date.now()-7*DAY),key=tab=="cur"?cur:last;
   const rows=stats(key),mine=stats(cur).find(r=>r.uid==me.uid)||{min:0,hold:0,pen:5,bonus:0,score:-5};
   const T=settings.target,h=mine.min/60,left=Math.max(0,T-h),a=myActive();
-  const king=rows[0]&&rows[0].min>0?rows[0].uid:null;
+  const fin=tab!="cur";
+  if(!fin)rows.sort((x,y)=>y.min-x.min);
+  const king=fin&&rows[0]&&rows[0].min>0?rows[0].uid:null;
   const live=sessions.filter(s=>s.status=="active");
   const weekAgo=Date.now()-7*DAY;
   const my=sessions.filter(s=>s.uid==me.uid).sort((x,y)=>(t(y.startAt)||0)-(t(x.startAt)||0));
@@ -113,7 +115,7 @@ function render(){
     <div class="sub">이번 주 (월~일) 인정 시간</div>
     <div class="clock">${dur(mine.min)}</div>
     <div class="bar"><i style="width:${Math.min(100,h/T*100)}%"></i></div>
-    <div class="sub">${left>0?`목표 ${T}시간까지 ${dur(left*60)} 남음 · 지금 마감이면 <b class="bad">-${mine.pen}점</b>`:`목표 달성 · 상점 <b class="ok">+${mine.bonus}</b>`}${mine.hold?` · 보류 ${dur(mine.hold)}`:""}</div>
+    <div class="sub">${left>0?`목표 ${T}시간까지 ${dur(left*60)} 남음`:`<b class="ok">목표 달성!</b>`} · 벌점·상점은 일요일 밤 12시에 정산돼요${mine.hold?` · 보류 ${dur(mine.hold)}`:""}</div>
   </section>
   <section class="card">
     ${a?`<div class="sub">${esc(a.place)}에서 공부 중</div><div class="clock" data-t="${t(a.startAt)||Date.now()}">${clk(Date.now()-(t(a.startAt)||Date.now()))}</div><p class="sub">종료할 때도 사진 인증이 필요해요. 24시간 안에 종료하지 않으면 무효예요.</p><button class="pri" id="end" style="width:100%">공부 종료 인증</button>`
@@ -121,13 +123,13 @@ function render(){
   </section>
   <section class="card"><h2>지금 공부 중</h2>${live.length?live.map(s=>`<div class="live"><span>${esc(users[s.uid]?.nick||s.name)} · ${esc(s.place)}</span><b data-t="${t(s.startAt)||Date.now()}">${clk(Date.now()-(t(s.startAt)||Date.now()))}</b></div>`).join(""):`<p class="sub" style="margin:0">지금 공부 중인 멤버가 없어요.</p>`}</section>
   <section class="card"><div class="row between"><h2>주간 랭킹</h2><div class="tabs"><button class="${tab=="cur"?"on":""}" data-tab="cur">이번 주</button><button class="${tab=="last"?"on":""}" data-tab="last">지난 주</button></div></div>
-    <table><tr><th>이름</th><th class="n">시간</th><th class="n">벌점</th><th class="n">상점</th><th class="n">총점</th></tr>
-    ${rows.map(r=>`<tr><td>${r.uid==king?`<span class="crown">공부왕 </span>`:""}${esc(r.name)}</td><td class="n">${(r.min/60).toFixed(1)}h</td><td class="n bad">${r.pen?"-"+r.pen:"0"}</td><td class="n ok">${r.bonus?"+"+r.bonus:"0"}</td><td class="n"><b>${r.score}</b></td></tr>`).join("")}</table>
-    <p class="sub" style="margin:8px 0 0">인정된 세션만 합산해요. 총점 = 상점 − 벌점.</p></section>
+    <table><tr><th>이름</th><th class="n">시간</th>${fin?`<th class="n">벌점</th><th class="n">상점</th><th class="n">총점</th>`:""}</tr>
+    ${rows.map(r=>`<tr><td>${r.uid==king?`<span class="crown">공부왕 </span>`:""}${esc(r.name)}</td><td class="n">${(r.min/60).toFixed(1)}h</td>${fin?`<td class="n bad">${r.pen?"-"+r.pen:"0"}</td><td class="n ok">${r.bonus?"+"+r.bonus:"0"}</td><td class="n"><b>${r.score}</b></td>`:""}</tr>`).join("")}</table>
+    <p class="sub" style="margin:8px 0 0">인정된 세션만 합산해요. ${fin?"총점 = 상점 − 벌점, 1위가 이주의 공부왕이에요.":"이번 주 벌점·상점·공부왕은 일요일 밤 12시(월요일 0시)에 정해져요."}</p></section>
   <section class="card"><h2>내 기록 (최근 2주)</h2>${my.length?my.map(s=>{const[l,c]=STAT[s.status]||["",""],st0=t(s.startAt),old=!st0||st0<weekAgo;return`<div class="ses"><b class="${c}">${l}</b> · ${st0?md(st0)+" "+hm(st0):""}${s.status!="active"&&t(s.endAt)?"~"+hm(t(s.endAt)):""} · ${dur(mins(s))} · ${esc(s.place)}
     ${old?`<span class="sub">· 사진 보관 기간 만료</span>`:` <button class="sm" data-photo="${esc(s.startPhoto)}">시작 사진</button>${s.endPhoto?` <button class="sm" data-photo="${esc(s.endPhoto)}">종료 사진</button>`:""}`}
     ${s.status=="hold"?`<div class="sub">사진 시각이 인증 시각과 ${TOL}분 넘게 달라 보류됐어요. 관리자가 확인해요.</div>`:""}</div>`}).join(""):`<p class="sub" style="margin:0">아직 기록이 없어요.</p>`}</section>
-  ${isAdmin()?adminHtml(sessions.filter(s=>s.weekKey==cur||s.weekKey==last)):""}`;
+  ${isAdmin()?adminHtml():""}`;
   $("#out").onclick=()=>signOut(auth);
   $("#pf").onclick=()=>profileForm(true);
   $("#start")&&($("#start").onclick=()=>openForm("start"));
@@ -155,32 +157,48 @@ async function profileForm(edit){
     const r=$("#pr").value.trim(),n=$("#pn").value.trim(),err=m=>$("#err").textContent=m;
     if(!r||!n)return err("이름과 닉네임을 모두 입력해 주세요.");
     if(!edit&&$("#pi").value!==INVITE)return err("초대 코드가 맞지 않아요.");
-    try{await setDoc(doc(db,"profiles",me.uid),{realName:r});await setDoc(doc(db,"users",me.uid),{nick:n});
+    try{await setDoc(doc(db,"profiles",me.uid),{realName:r,email:me.email});await setDoc(doc(db,"users",me.uid),{nick:n});
       if(edit)$("#modal").innerHTML="";}catch(x){console.error(x);err("저장하지 못했어요. 잠시 뒤 다시 시도해 주세요.")}
   };
 }
-function adminHtml(list){
-  list=list.sort((x,y)=>(t(y.startAt)||0)-(t(x.startAt)||0));
-  return`<section class="card"><div class="row between"><h2>관리자</h2><button class="sm" id="tg">목표 시간 (${settings.target}h)</button></div>
-  ${list.map(s=>`<div class="ses">${esc(users[s.uid]?.nick||s.name)}${real[s.uid]?` (${esc(real[s.uid].realName)})`:""} · ${t(s.startAt)?md(t(s.startAt))+" "+hm(t(s.startAt)):""}~${t(s.endAt)?hm(t(s.endAt)):""} · <b class="${(STAT[s.status]||[])[1]}">${(STAT[s.status]||[s.status])[0]}</b>
-  <button class="sm" data-edit="${s.id}">수정</button> <button class="sm" data-del="${s.id}">삭제</button></div>`).join("")||`<p class="sub">세션이 없어요.</p>`}</section>`;
+let afilter="";
+function adminHtml(){
+  const ids=Object.keys(users),wn=wk(Date.now());
+  const list=sessions.filter(s=>!afilter||s.uid==afilter).sort((x,y)=>(t(y.startAt)||0)-(t(x.startAt)||0)).slice(0,60);
+  const mem=ids.map(uid=>{const u=users[uid],r=real[uid]||{},m=sessions.filter(s=>s.uid==uid&&s.weekKey==wn&&s.status=="ok").reduce((x,s)=>x+mins(s),0);
+    return`<tr><td>${esc(u.nick||"-")}</td><td>${esc(r.realName||"-")}</td><td class="sub">${esc(r.email||"-")}</td><td class="n">${(m/60).toFixed(1)}h</td><td><button class="sm" data-mem="${uid}">수정</button></td></tr>`}).join("");
+  return`<section class="card"><div class="row between"><h2>관리자 · 회원 ${ids.length}명</h2><button class="sm" id="tg">목표 시간 (${settings.target}h)</button></div>
+  <div style="overflow-x:auto"><table><tr><th>닉네임</th><th>이름</th><th>이메일</th><th class="n">이번 주</th><th></th></tr>${mem}</table></div></section>
+  <section class="card"><div class="row between"><h2>전체 세션 (최근 60개)</h2><select id="af" style="width:auto;margin:0"><option value="">전체 회원</option>${ids.map(i=>`<option value="${i}" ${afilter==i?"selected":""}>${esc(users[i].nick||i)}</option>`).join("")}</select></div>
+  ${list.map(s=>`<div class="ses"><b>${esc(users[s.uid]?.nick||s.name)}</b>${real[s.uid]?` (${esc(real[s.uid].realName||"")})`:""} · ${t(s.startAt)?md(t(s.startAt))+" "+hm(t(s.startAt)):""}~${t(s.endAt)?hm(t(s.endAt)):""} · ${esc(s.place)} · <b class="${(STAT[s.status]||[])[1]}">${(STAT[s.status]||[s.status])[0]}</b>
+  <div style="margin-top:4px">${s.startPhoto?`<button class="sm" data-photo="${esc(s.startPhoto)}">시작 사진</button> `:""}${s.endPhoto?`<button class="sm" data-photo="${esc(s.endPhoto)}">종료 사진</button> `:""}<button class="sm" data-edit="${s.id}">수정</button> <button class="sm" data-del="${s.id}">삭제</button></div></div>`).join("")||`<p class="sub">세션이 없어요.</p>`}</section>`;
 }
 const parseKst=s=>{const d=new Date(s.trim().replace(" ","T")+":00+09:00");return isNaN(d)?null:d.getTime()};
 const fmtKst=ms=>ms?new Date(ms+KST).toISOString().slice(0,16).replace("T"," "):"";
 async function audit(sid,before,after){await addDoc(collection(db,"audit"),{by:me.email,sid,before,after,at:serverTimestamp()})}
 function bindAdmin(){
   $("#tg").onclick=async()=>{const v=parseFloat(prompt("주간 목표 시간(시간)",settings.target));if(v>0)await setDoc(doc(db,"settings","main"),{target:v})};
+  $("#af").onchange=e=>{afilter=e.target.value;render()};
+  document.querySelectorAll("[data-mem]").forEach(b=>b.onclick=async()=>{
+    const uid=b.dataset.mem,u=users[uid],r=real[uid]||{};
+    const n=prompt("닉네임",u.nick||"");if(n===null)return;
+    const rn=prompt("이름",r.realName||"");if(rn===null)return;
+    await audit(uid,{nick:u.nick,realName:r.realName},{nick:n,realName:rn});
+    await setDoc(doc(db,"users",uid),{nick:n.trim()||u.nick},{merge:true});
+    await setDoc(doc(db,"profiles",uid),{realName:rn.trim()},{merge:true});
+  });
   document.querySelectorAll("[data-edit]").forEach(b=>b.onclick=async()=>{
     const s=sessions.find(x=>x.id==b.dataset.edit);
+    const pl=prompt("장소 ("+PLACES.join(" / ")+")",s.place);if(pl===null)return;
     const a=prompt("시작 시각 (YYYY-MM-DD HH:MM, 한국 시간)",fmtKst(t(s.startAt)));if(a===null)return;
     const e=prompt("종료 시각 (비우면 종료 없음)",fmtKst(t(s.endAt)));if(e===null)return;
     const stt=prompt("상태: ok(인정) / hold(보류) / void(무효) / active(진행 중)",s.status);if(!stt)return;
     const A=parseKst(a),E=e.trim()?parseKst(e):null;if(!A||(e.trim()&&!E))return alert("시각 형식이 맞지 않아요.");
-    const upd={startAt:Timestamp.fromMillis(A),endAt:E?Timestamp.fromMillis(E):null,status:stt.trim(),weekKey:wk(E||A)};
+    const upd={startAt:Timestamp.fromMillis(A),endAt:E?Timestamp.fromMillis(E):null,status:stt.trim(),place:pl.trim()||s.place,weekKey:wk(E||A)};
     await audit(s.id,{start:fmtKst(t(s.startAt)),end:fmtKst(t(s.endAt)),status:s.status},{start:a,end:e,status:upd.status});
     await updateDoc(doc(db,"sessions",s.id),upd);
   });
-  document.querySelectorAll("[data-del]").forEach(b=>b.onclick=async()=>{if(!confirm("이 세션을 삭제할까요?"))return;await audit(b.dataset.del,"삭제됨","");await deleteDoc(doc(db,"sessions",b.dataset.del))});
+  document.querySelectorAll("[data-del]").forEach(b=>b.onclick=async()=>{if(!confirm("이 세션을 삭제할까요?"))return;await audit(b.dataset.del,"삭제됨","");await deleteDoc(doc(db,"sessions",b.dataset.del));for(const k of["start","end"])deleteDoc(doc(db,"photos",b.dataset.del+"_"+k)).catch(()=>{})});
 }
 
 /* ---------- 인증 ---------- */
@@ -225,11 +243,12 @@ let unsubs=[];
 onAuthStateChanged(auth,u=>{
   unsubs.forEach(f=>f());unsubs=[];me=u;
   if(!u){users={};real={};usersReady=false;sessions=[];render();return}
+  setDoc(doc(db,"profiles",u.uid),{email:u.email},{merge:true}).catch(()=>{});
   getDocs(query(collection(db,"photos"),where("at","<",Timestamp.fromMillis(Date.now()-7*DAY)))).then(q=>q.forEach(d=>deleteDoc(d.ref))).catch(()=>{});
   const keys=[wk(Date.now()),wk(Date.now()-7*DAY)];
   unsubs.push(onSnapshot(collection(db,"users"),q=>{users={};q.forEach(d=>users[d.id]=d.data());usersReady=true;render()}));
   if(isAdmin())unsubs.push(onSnapshot(collection(db,"profiles"),q=>{real={};q.forEach(d=>real[d.id]=d.data());render()}));
-  unsubs.push(onSnapshot(query(collection(db,"sessions"),where("weekKey","in",keys)),q=>{
+  unsubs.push(onSnapshot(isAdmin()?collection(db,"sessions"):query(collection(db,"sessions"),where("weekKey","in",keys)),q=>{
     sessions=q.docs.map(d=>({id:d.id,...d.data()}));
     for(const s of sessions)if(s.status=="active"&&t(s.startAt)&&Date.now()-t(s.startAt)>DAY&&(s.uid==me.uid||isAdmin())&&!voided.has(s.id)){voided.add(s.id);updateDoc(doc(db,"sessions",s.id),{status:"void"})}
     render();
